@@ -109,12 +109,19 @@ def generate_constraints(subject_id: str, relation: Relation, new_target_id: str
 
     if relation == Relation.MOTHER:
         constraints = RelationalConstraints(subject_id, {Relation.MOTHER: [new_target_id]})
-
         tests.append(constraints.sibling())
         tests.append(constraints.uncle())
         tests.append(constraints.aunt())
         tests.append(constraints.mothers_child())
         tests.append(constraints.mothers_number_of_children())
+
+    if relation == Relation.FATHER:
+        constraints = RelationalConstraints(subject_id, {Relation.FATHER: [new_target_id]})
+        tests.append(constraints.sibling())
+        tests.append(constraints.uncle())
+        tests.append(constraints.aunt())
+        tests.append(constraints.fathers_child())
+        tests.append(constraints.fathers_number_of_children())
 
     return tests
 
