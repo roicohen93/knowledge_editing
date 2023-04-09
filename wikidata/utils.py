@@ -3,6 +3,7 @@ import os
 from collections import defaultdict
 from qwikidata.linked_data_interface import get_entity_dict_from_api
 from qwikidata.entity import WikidataItem
+from ..relation import Relation
 
 
 def load_json(path: str):
@@ -63,6 +64,7 @@ def get_targets_given_item_and_relation(item: WikidataItem, relation_id: str):
     return target_ids
 
 
-def subject_relation_to_targets(subject_id: str, relation_id: str):
+def subject_relation_to_targets(subject_id: str, relation: Relation):
+    relation_id = relation.id()
     subject_item = wikidata_item_given_id(subject_id)
     return get_targets_given_item_and_relation(subject_item, relation_id)

@@ -2,28 +2,27 @@ from wikidata.relations import our_relations, relation2impacted_relations, relat
 from wikidata.utils import subject_relation_to_targets, get_label, get_aliases, get_description
 from build_logical_constraints import generate_constraints
 from utils import create_test_example_given_input_targets
+from relation import Relation
+from query import Query
+from testcase import TestCase
 
 
-def making_up_axis(subject_id, relation):
+def making_up_axis(subject_id: str, relation: Relation):
     tests = []
 
-    if relation not in our_relations:
+    if relation not in Relation:
         return tests
 
-    subject_label = get_label(subject_id)
-    impacted_relations = relation2impacted_relations[relation]
-    for other_relation in our_relations:
+    impacted_relations = relation.impacted_relations()
+    for other_relation in Relation:
         if other_relation == relation or other_relation in impacted_relations:
             continue
         corresponding_targets = subject_relation_to_targets(subject_id, our_relations[other_relation])
         if not corresponding_targets:
             continue
-        phrase = relation2phrase[other_relation].replace('<subject>', subject_label)
-        test = {
-            'input_prompt': phrase,
-            'answers': [{'value': get_label(target), 'aliases': get_aliases(target)} for target in corresponding_targets]
-        }
-        tests.append(test)
+        test_query = Query(subject_id, other_relation, corresponding_targets)
+        condition_queries = [test_query]
+        tests.append(TestCase(test_query=test_query, condition_queries=condition_queries))
 
     return tests
 
