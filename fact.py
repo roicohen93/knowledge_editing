@@ -11,6 +11,22 @@ class Fact:
         self._relation = relation
         self._target_id = target_id
 
+    def get_subject_label(self):
+        return get_label(self._subject_id)
+
+    def get_target_label(self):
+        return get_label(self._target_id)
+
+    def get_fact_prompt(self):
+        return self._relation.phrase(get_label(self._subject_id))
+
+    def to_dict(self):
+        return {
+            'subject_id': self._subject_id,
+            'relation': self._relation.name,
+            'target_id': self._target_id
+        }
+
     def generate_tests(self):
         # TODO: Generate all tests
         return self._generate_making_up_tests() + \
@@ -25,7 +41,7 @@ class Fact:
             if not corresponding_targets:
                 continue
             query = Query(self._subject_id, other_relation, corresponding_targets)
-            tests.append(TestCase(query, [query]))  # Making up tests check that the query answer doesn't change
+            tests.append(TestCase(self, query, [query]))  # Making up tests check that the query answer doesn't change
         return tests
 
     def _generate_logical_constraints_tests(self):
@@ -49,7 +65,7 @@ class MotherFact(Fact):
         fathers_children = [child for child in fathers_children if child != self._subject_id]
         query = Query(self._subject_id, Relation.SIBLING, mothers_children + fathers_children)
         conditions = []  # TODO: Add conditions
-        tests.append(TestCase(query, conditions))
+        tests.append(TestCase(self, query, conditions))
 
         # uncles and aunts
         mothers_siblings = Relation.SIBLING.evaluate(self._target_id)
@@ -66,20 +82,20 @@ class MotherFact(Fact):
                 aunts.append(parent_sibling)
         query = Query(self._subject_id, Relation.UNCLE, uncles)
         conditions = []  # TODO: Add conditions
-        tests.append(TestCase(query, conditions))
+        tests.append(TestCase(self, query, conditions))
         query = Query(self._subject_id, Relation.AUNT, aunts)
         conditions = []  # TODO: Add conditions
-        tests.append(TestCase(query, conditions))
+        tests.append(TestCase(self, query, conditions))
 
         # child
         query = Query(self._target_id, Relation.CHILD, [self._subject_id])  # TODO: List all children instead of only the new one?
         conditions = []  # TODO: Add conditions
-        tests.append(TestCase(query, conditions))
+        tests.append(TestCase(self, query, conditions))
 
         # number of children
         query = Query(self._target_id, Relation.NUMBER_OF_CHILDREN, [len(mothers_children) + 1])
         conditions = []  # TODO: Add conditions
-        tests.append(TestCase(query, conditions))
+        tests.append(TestCase(self, query, conditions))
 
         return tests
 
