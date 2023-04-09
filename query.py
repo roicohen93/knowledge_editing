@@ -6,7 +6,7 @@ class Query:
     def __init__(self, subject_id, relation, target_ids):
         self._subject_id = subject_id
         self._relation = relation
-        self._targets_ids = target_ids
+        self._targets_ids = target_ids if type(target_ids) == list else [target_ids]
 
     def to_dict(self):
         return {

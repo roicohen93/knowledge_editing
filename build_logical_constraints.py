@@ -27,8 +27,11 @@ class RelationalConstraints:
             self.conditions.append(Query(subject_id, relation, targets))
         return targets
 
-    def sibling(self):
+    def empty_conditions(self):
         self.conditions = []
+
+    def sibling(self):
+        self.empty_conditions()
         mothers = self._targets(Relation.MOTHER)
         fathers = self._targets(Relation.FATHER)
         mother_children = self._targets_of(mothers, Relation.CHILD)
@@ -38,52 +41,82 @@ class RelationalConstraints:
             condition_queries=self.conditions
         )
 
+    def mothers_child(self):
+        mother = self._targets(Relation.MOTHER)[0]
+        return TestCase(
+            test_query=Query(mother, Relation.CHILD, [self.subject_id]),
+            condition_queries=[]
+        )
+
+    def fathers_child(self):
+        father = self._targets(Relation.FATHER)[0]
+        return TestCase(
+            test_query=Query(father, Relation.CHILD, [self.subject_id]),
+            condition_queries=[]
+        )
+
+    def mothers_number_of_children(self):
+        self.empty_conditions()
+        mother = self._targets(Relation.MOTHER)[0]
+        num_children = self._targets_of([mother], Relation.NUMBER_OF_CHILDREN)[0]
+        return TestCase(
+            test_query=Query(mother, Relation.NUMBER_OF_CHILDREN, num_children + 1),
+            condition_queries=self.conditions
+        )
+
+    def fathers_number_of_children(self):
+        self.empty_conditions()
+        father = self._targets(Relation.MOTHER)[0]
+        num_children = self._targets_of([father], Relation.NUMBER_OF_CHILDREN)[0]
+        return TestCase(
+            test_query=Query(father, Relation.NUMBER_OF_CHILDREN, num_children + 1),
+            condition_queries=self.conditions
+        )
+
+    def uncle(self):
+        self.empty_conditions()
+        mothers = self._targets(Relation.MOTHER)
+        fathers = self._targets(Relation.FATHER)
+        mother_siblings = self._targets_of(mothers, Relation.SIBLING)
+        male_mother_siblings = [sibling for sibling in mother_siblings
+                                if get_label(subject_relation_to_targets(sibling, Relation.SEX_OR_GENDER)[0]) == 'male']
+        father_siblings = self._targets_of(fathers, Relation.SIBLING)
+        male_father_siblings = [sibling for sibling in father_siblings
+                                if get_label(subject_relation_to_targets(sibling, Relation.SEX_OR_GENDER)[0]) == 'male']
+        return TestCase(
+            test_query=Query(self.subject_id, Relation.UNCLE, male_mother_siblings + male_father_siblings),
+            condition_queries=self.conditions
+        )
+
+    def aunt(self):
+        self.empty_conditions()
+        mothers = self._targets(Relation.MOTHER)
+        fathers = self._targets(Relation.FATHER)
+        mother_siblings = self._targets_of(mothers, Relation.SIBLING)
+        female_mother_siblings = [sibling for sibling in mother_siblings
+                                if get_label(subject_relation_to_targets(sibling, Relation.SEX_OR_GENDER)[0]) == 'female']
+        father_siblings = self._targets_of(fathers, Relation.SIBLING)
+        female_father_siblings = [sibling for sibling in father_siblings
+                                if get_label(subject_relation_to_targets(sibling, Relation.SEX_OR_GENDER)[0]) == 'female']
+        return TestCase(
+            test_query=Query(self.subject_id, Relation.AUNT, female_mother_siblings + female_father_siblings),
+            condition_queries=self.conditions
+        )
+
 
 def generate_constraints(subject_id: str, relation: Relation, new_target_id: str):
-    constraints = []
-    subject_label = get_label(subject_id)
+    tests = []
 
     if relation == Relation.MOTHER:
-        mother_label = get_label(new_target_id)
+        constraints = RelationalConstraints(subject_id, {Relation.MOTHER: [new_target_id]})
 
-        # siblings
-        phrase = relation2phrase['sibling'].replace('<subject>', subject_label)
-        mothers_children = subject_relation_to_targets(new_target_id, Relation.CHILD.id())
-        father_options = subject_relation_to_targets(subject_id, Relation.FATHER.id())
-        father_children = []
-        for father in father_options:
-            father_children += subject_relation_to_targets(father, Relation.CHILD.id())
-        constraints.append(create_test_example_given_input_targets(phrase, mothers_children + father_children))
+        tests.append(constraints.sibling())
+        tests.append(constraints.uncle())
+        tests.append(constraints.aunt())
+        tests.append(constraints.mothers_child())
+        tests.append(constraints.mothers_number_of_children())
 
-        # uncle
-        phrase = relation2phrase['uncle'].replace('<subject>', subject_label)
-        new_uncles = []
-        mother_siblings = subject_relation_to_targets(new_target_id, our_relations['sibling'])
-        father_siblings = []
-        for father in father_options:
-            father_siblings += subject_relation_to_targets(father, our_relations['sibling'])
-        for optional_uncle in mother_siblings + father_siblings:
-            if get_label(subject_relation_to_targets(optional_uncle, our_relations['sex or gender'])[0]) == 'male':
-                new_uncles.append(optional_uncle)
-        constraints.append(create_test_example_given_input_targets(phrase, new_uncles))
-
-        # aunt
-        phrase = relation2phrase['aunt'].replace('<subject>', subject_label)
-        new_aunts = []
-        for optional_aunt in mother_siblings + father_siblings:
-            if get_label(subject_relation_to_targets(optional_aunt, our_relations['sex or gender'])[0]) == 'female':
-                new_aunts.append(optional_aunt)
-        constraints.append(create_test_example_given_input_targets(phrase, new_aunts))
-
-        # child
-        phrase = relation2phrase['child'].replace('<subject>', mother_label)
-        constraints.append(create_test_example_given_input_targets(phrase, [subject_id]))
-
-        # number of children
-        phrase = relation2phrase['number of children'].replace('<subject>', mother_label)
-        constraints.append(create_test_example_given_input_targets(phrase, [len(mothers_children) + 1]))
-
-    return constraints
+    return tests
 
 
 
