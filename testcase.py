@@ -1,10 +1,16 @@
 class TestCase:
 
-    def __init__(self, test_query, condition_queries=[]):
+    def __init__(self, test_query, condition_queries=None):
         if condition_queries is None:
             condition_queries = []
         self._test_query = test_query
         self._condition_queries = condition_queries
+
+    def get_test_query(self):
+        return self._test_query
+
+    def get_condition_queries(self):
+        return self._condition_queries
 
     def to_dict(self):
         return {
