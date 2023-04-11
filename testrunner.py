@@ -13,7 +13,7 @@ class TestRunner:
         self._query_executor = query_executor
         self._model_editor = model_editor
 
-    def run_testcase(self, fact, test_cases):
+    def run_testcases(self, fact, test_cases):
         results = {TestResult.NOT_EXECUTED: [], TestResult.PASSED: [], TestResult.FAILED: []}
 
         # Check conditions
@@ -56,5 +56,5 @@ if __name__ == '__main__':
     cq = Query('Q12379', Relation.BROTHER, ['Q210593'])  # Mario's brother is Luigi
     tc = TestCase(tq, [cq])
     tr = TestRunner(GPT2QueryExecutor(), RomeModelEditor())
-    res = tr.run_testcase(f, [tc])
+    res = tr.run_testcases(f, [tc])
     print(res)
