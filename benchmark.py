@@ -6,11 +6,11 @@ class Example:
 
     def __init__(self,
                  fact: Fact,
-                 making_up_tests: list,
-                 logical_constraints: list,
-                 subject_paraphrasing_tests: list,
-                 two_hop_tests: list,
-                 prev_storage_tests: list):
+                 making_up_tests: list = [],
+                 logical_constraints: list = [],
+                 subject_paraphrasing_tests: list = [],
+                 two_hop_tests: list = [],
+                 prev_storage_tests: list = []):
         self.fact = fact
         self.making_up_tests = making_up_tests
         self.logical_constraints = logical_constraints
@@ -24,11 +24,12 @@ class CounterFactualExample(Example):
     def __init__(self,
                  fact: Fact,
                  previous_fact: Fact,
-                 making_up_tests: list,
-                 logical_constraints: list,
-                 subject_paraphrasing_tests: list,
-                 two_hop_tests: list,
-                 prev_storage_tests: list):
+                 making_up_tests: list = [],
+                 logical_constraints: list = [],
+                 subject_paraphrasing_tests: list = [],
+                 two_hop_tests: list = [],
+                 prev_storage_tests: list = []
+                 ):
         super().__init__(
             fact,
             making_up_tests,
@@ -44,11 +45,12 @@ class RecentlyAddedExample(Example):
 
     def __init__(self,
                  fact: Fact,
-                 making_up_tests: list,
-                 logical_constraints: list,
-                 subject_paraphrasing_tests: list,
-                 two_hop_tests: list,
-                 prev_storage_tests: list):
+                 making_up_tests: list = [],
+                 logical_constraints: list = [],
+                 subject_paraphrasing_tests: list = [],
+                 two_hop_tests: list = [],
+                 prev_storage_tests: list = []
+                 ):
         super().__init__(
             fact,
             making_up_tests,

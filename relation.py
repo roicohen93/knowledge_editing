@@ -31,3 +31,10 @@ class Relation(Enum):
 
     def impacted_relations(self):
         return [Relation[r] for r in self._impacted_relations]
+
+    @staticmethod
+    def string_to_enum(self, relation_name: str):
+        for relation in Relation:
+            if relation_name == relation.name:
+                return relation
+        return None
