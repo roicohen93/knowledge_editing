@@ -69,7 +69,7 @@ def subject_relation_to_targets(subject_id: str, relation):
     return get_targets_given_item_and_relation(subject_item, relation_id)
 
 
-ent_label2id_dict = load_json('./ent_label2id.json')
+ent_label2id_dict = load_json('./wikidata/ent_label2id.json')
 
 
 def ent_label2id(label: str):

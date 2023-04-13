@@ -1,5 +1,6 @@
 from enum import Enum
 from wikidata.utils import subject_relation_to_targets
+from utils import compute_exact_match
 
 
 class Relation(Enum):
@@ -33,8 +34,9 @@ class Relation(Enum):
         return [Relation[r] for r in self._impacted_relations]
 
     @staticmethod
-    def string_to_enum(self, relation_name: str):
+    def string_to_enum(relation_name: str):
+        processed_relation_name = relation_name.replace(' ', '_')
         for relation in Relation:
-            if relation_name == relation.name:
+            if compute_exact_match(processed_relation_name, relation.name):
                 return relation
         return None

@@ -1,5 +1,6 @@
 from fact import Fact
 from testcase import TestCase
+import random
 
 
 class Example:
@@ -17,6 +18,15 @@ class Example:
         self.subject_paraphrasing_tests = subject_paraphrasing_tests
         self.two_hop_tests = two_hop_tests
         self.prev_storage_tests = prev_storage_tests
+
+    def __str__(self):
+        res = f'Fact: ({self.fact.get_subject_label()}, {self.fact.get_relation_label()}, {self.fact.get_target_label()})\n'
+        res += f'Making Up tests: {self.making_up_tests}\n'
+        res += f'Logical Constraints: {self.logical_constraints}\n'
+        res += f'Subject Paraphrasing tests: {self.subject_paraphrasing_tests}\n'
+        res += f'Two-Hop tests: {self.two_hop_tests}\n'
+        res += f'Previous Storage tests: {self.prev_storage_tests}\n'
+        return res
 
 
 class CounterFactualExample(Example):
@@ -65,3 +75,6 @@ class Dataset:
 
     def __init__(self, examples: list):
         self.examples = examples
+
+    def sample(self, k: int):
+        return random.sample(self.examples, min(k, len(self.examples)))

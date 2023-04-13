@@ -14,6 +14,9 @@ class Fact:
     def get_target_label(self):
         return get_label(self._target_id)
 
+    def get_relation_label(self):
+        return self._relation.name.replace('_', ' ')
+
     def get_fact_prompt(self):
         return self._relation.phrase(get_label(self._subject_id))
 
