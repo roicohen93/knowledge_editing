@@ -12,7 +12,7 @@ if __name__ == '__main__':
         optional_targets = relation2optional_targets[relation]
         random_target = random.sample(optional_targets, 1)[0]
         counterfactual = (subject, relation, random_target)
-        dataset.append({'fact': fact, 'counterfactual': counterfactual})
+        dataset.append({'fact': (subject, relation, target), 'counterfactual': counterfactual})
 
         print(fact)
         print(counterfactual)

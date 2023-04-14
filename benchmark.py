@@ -1,6 +1,15 @@
 from fact import Fact
 from testcase import TestCase
 import random
+from enum import Enum, auto
+
+
+class TestsAxis(Enum):
+    MAKING_UP = auto()
+    LOGICAL_CONSTRAINTS = auto()
+    SUBJECT_PARAPHRASING = auto()
+    TWO_HOP = auto()
+    PREVIOUS_STORAGE = auto()
 
 
 class Example:
