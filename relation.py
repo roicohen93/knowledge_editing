@@ -10,11 +10,19 @@ class Relation(Enum):
     BROTHER = ('P7', 'The brother of <subject> is', ['SIBLING'])
     SISTER = ('P9', 'The sister of <subject> is', ['SIBLING'])
     SIBLING = ('P3373', "<subject>'s siblings are", ['BROTHER', 'SISTER'])
+    SPOUSE = ('P26', "<subject>'s spouse is", [])
     UNCLE = ('', 'The uncle of <subject> is', [])
     AUNT = ('', 'The aunt of <subject> is', [])
     CHILD = ('P40', 'The child of <subject> is', ['NUMBER_OF_CHILDREN'])
     NUMBER_OF_CHILDREN = ('P1971', 'The number of children <subject> has is', [])
     SEX_OR_GENDER = ('P21', "<subject>'s gender is", [])
+    HEAD_OF_GOVERNMENT = ('P6', 'The head of government of <subject> is', ['head of state'])
+    COUNTRY = ('P17', 'The country which <subject> is associated with is', [])
+    PLACE_OF_BIRTH = ('P19', 'The city in which <subject> was born is', ['country of citizenship'])
+    PLACE_OF_DEATH = ('P20', 'The city in which <subject> died is', [])
+    COUNTRY_OF_CITIZENSHIP = ('P27', 'The country of citizenship of <subject> is', [])
+    CONTINENT = ('P30', 'The continent which <subject> is part of is', ['country'])
+    HEAD_OF_STATE = ('P35', 'The head of state of <subject> is', ['head of government'])
 
     def __init__(self, relation_id, phrase, impacted_relations):
         self._relation_id = relation_id

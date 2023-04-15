@@ -30,10 +30,10 @@ def top_k_most_popular_subjects(k: int):
 def divide_ents_per_popularity(num_of_divisions: int):
     ents_list, num_of_facts_list = ent_and_num_of_facts_lists()
     size_of_each_division = len(ents_list) // num_of_divisions
-    sorted_idx = np.argpartition(num_of_facts_list)
+    sorted_idx = np.argsort(num_of_facts_list)
     idx_groups = []
     for i in range(1, num_of_divisions + 1):
-        idx_groups.append([sorted_idx[(i-1) * size_of_each_division : i * size_of_each_division]])
+        idx_groups.append(sorted_idx[(i-1) * size_of_each_division: i * size_of_each_division])
     ent_groups = [[ents_list[i] for i in current_idx_group] for current_idx_group in idx_groups]
     return ent_groups
 
@@ -84,11 +84,12 @@ def sample_k_facts(k: int, wikidata: dict):
 
 if __name__ == '__main__':
     wikidata_dir = './wikidata_full_kg/filtered_relations'
-    popular_ents = top_k_most_popular_subjects(5000)
-    sub_wikidata = wikidata_subset(popular_ents, wikidata_dir)
-    sampled_facts = sample_k_facts(100, sub_wikidata)
-    write_json(sampled_facts, './100_sampled_facts.json')
-    print(f'{len(sampled_facts)} facts were sampled')
-    print(f'Examples: {random.sample(sampled_facts), 10}')
+    grouped_ents = sample_ents_according_to_popularity(10, [10 for _ in range(10)])
+    print(grouped_ents)
+    # sub_wikidata = wikidata_subset(popular_ents, wikidata_dir)
+    # sampled_facts = sample_k_facts(100, sub_wikidata)
+    # write_json(sampled_facts, './100_sampled_facts.json')
+    # print(f'{len(sampled_facts)} facts were sampled')
+    # print(f'Examples: {random.sample(sampled_facts), 10}')
 
 
