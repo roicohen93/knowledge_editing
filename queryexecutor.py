@@ -42,10 +42,10 @@ class GPT2QueryExecutor(QueryExecutor):
 
     def __init__(self, model=None, tokenizer=None):
         if tokenizer is None:
-            tokenizer = AutoTokenizer.from_pretrained("gpt2-medium")
+            tokenizer = AutoTokenizer.from_pretrained("gpt2-xl")
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
-            model = GPT2LMHeadModel.from_pretrained("gpt2-medium", pad_token_id=tokenizer.eos_token_id)
+            model = GPT2LMHeadModel.from_pretrained("gpt2-xl", pad_token_id=tokenizer.eos_token_id)
         super().__init__(model, tokenizer)
 
     def copy(self):

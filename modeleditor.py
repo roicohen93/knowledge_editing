@@ -8,7 +8,7 @@ class ModelEditor:
         raise NotImplementedError()  # Override in concrete classes
 
 
-class RomeModelEditor(ModelEditor):
+class ROMEModelEditor(ModelEditor):
 
     def edit_model(self, model, tokenizer, fact):
         # TODO: Fixup imports
@@ -20,7 +20,7 @@ class RomeModelEditor(ModelEditor):
         target = fact.get_target_label()
         prompt = fact.get_fact_prompt().replace(subject, '{}')
         requests = [{'prompt': prompt, 'subject': subject, 'target_new': {'str': target}}]
-        hparams = ROMEHyperParams.from_json('hparams/ROME/gpt2-medium.json')
+        hparams = ROMEHyperParams.from_json('hparams/ROME/gpt2-xl.json')
         new_model, _ = apply_rome_to_model(model, tokenizer, requests, hparams)
 
         sys.path.remove('.')
