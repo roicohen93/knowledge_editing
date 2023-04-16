@@ -45,7 +45,7 @@ class TestRunner:
 
 if __name__ == '__main__':
     from queryexecutor import GPT2QueryExecutor
-    from modeleditor import ROMEModelEditor
+    from modeleditor import ROMEModelEditor, MENDModelEditor
     from fact import Fact
     from relation import Relation
     from query import Query
@@ -55,6 +55,6 @@ if __name__ == '__main__':
     tq = Query('Q12379', Relation.BROTHER, ['Q76'])  # Mario's brother is Barack Obama
     cq = Query('Q12379', Relation.BROTHER, ['Q210593'])  # Mario's brother is Luigi
     tc = TestCase(tq, [])
-    tr = TestRunner(GPT2QueryExecutor(), ROMEModelEditor())
+    tr = TestRunner(GPT2QueryExecutor(), MENDModelEditor())
     res = tr.run_testcases(f, [tc])
     print(res)
