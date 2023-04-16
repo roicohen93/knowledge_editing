@@ -2,9 +2,10 @@ import json
 import os
 import numpy as np
 import random
-from utils import load_json, write_json
+from utils import load_json, write_json, ent_label2id, is_relation_associated, subject_relation_to_targets, retrieve_from_wikidata
 from config import checkable_relations
 from collections import defaultdict
+from relations import our_relations
 
 
 def ent_and_num_of_facts_lists():
@@ -20,15 +21,70 @@ def ent_and_num_of_facts_lists():
     return ents_list, num_of_facts_list
 
 
+def ent_and_num_of_facts_lists_filtered():
+    ent2num_of_facts = load_json('./subject2num_of_facts.json')
+    filtered_ent2num_of_facts = {ent: num_of_facts for ent, num_of_facts in ent2num_of_facts.items()
+                                 if is_interesting_ent(ent)}
+    num_of_ents = len(filtered_ent2num_of_facts)
+    ents_list, num_of_facts_list = [None for _ in range(num_of_ents)], np.zeros(num_of_ents)
+
+    i = 0
+    for ent, num_of_facts in filtered_ent2num_of_facts.items():
+        ents_list[i], num_of_facts_list[i] = ent, num_of_facts
+        i += 1
+
+    return ents_list, num_of_facts_list
+
+
+def ent_and_num_of_facts_lists_filtered2():
+    ent2num_of_facts = load_json('./subject2num_of_facts.json')
+    filtered_ent2num_of_facts = dict()
+    i = 0
+    for ent, num_of_facts in ent2num_of_facts.items():
+        i += 1
+        if is_interesting_ent2(ent):
+            filtered_ent2num_of_facts[ent] = num_of_facts
+        if i % 100 == 0:
+            print(f'{i}/{len(ent2num_of_facts)}')
+    num_of_ents = len(filtered_ent2num_of_facts)
+    ents_list, num_of_facts_list = [None for _ in range(num_of_ents)], np.zeros(num_of_ents)
+
+    i = 0
+    for ent, num_of_facts in filtered_ent2num_of_facts.items():
+        ents_list[i], num_of_facts_list[i] = ent, num_of_facts
+        i += 1
+
+    return ents_list, num_of_facts_list
+
+
+def is_interesting_ent(ent_label: str):
+    ent_id = ent_label2id(ent_label)
+    for relation_name, relation_id in our_relations.items():
+        if is_relation_associated(ent_id, relation_id):
+            return True
+    return False
+
+
+def is_interesting_ent2(ent_label: str):
+    ent_facts = retrieve_from_wikidata(ent_label, './wikidata_full_kg/filtered_relations')
+    if ent_facts is None:
+        return False
+    our_relations_list = list(our_relations.keys())
+    for relation, target in ent_facts:
+        if any([relation == our_relation for our_relation in our_relations_list]):
+            return True
+    return False
+
+
 def top_k_most_popular_subjects(k: int):
-    ents_list, num_of_facts_list = ent_and_num_of_facts_lists()
+    ents_list, num_of_facts_list = ent_and_num_of_facts_lists_filtered()
     top_k_idx = np.argpartition(num_of_facts_list, -k)[-k:]
     top_k_ents = [ents_list[i] for i in top_k_idx]
     return top_k_ents
 
 
 def divide_ents_per_popularity(num_of_divisions: int):
-    ents_list, num_of_facts_list = ent_and_num_of_facts_lists()
+    ents_list, num_of_facts_list = ent_and_num_of_facts_lists_filtered2()
     size_of_each_division = len(ents_list) // num_of_divisions
     sorted_idx = np.argsort(num_of_facts_list)
     idx_groups = []
@@ -64,6 +120,16 @@ def wikidata_subset(ents: list, wikidata_dir: str):
     return result_dict
 
 
+def sample_fact_given_subject(subject_label: str):
+    subject_id = ent_label2id(subject_label)
+    relations = random.sample(list(our_relations.keys()))
+    for relation in relations:
+        relation_id = our_relations[relation]
+        targets = subject_relation_to_targets(subject_id, relation_id)
+        if targets:
+            return subject_id, relation, random.sample(relation, 1)[0]
+
+
 def sample_k_facts(k: int, wikidata: dict):
     checkable_ents = []
     for ent, facts in wikidata.items():
@@ -84,12 +150,14 @@ def sample_k_facts(k: int, wikidata: dict):
 
 if __name__ == '__main__':
     wikidata_dir = './wikidata_full_kg/filtered_relations'
-    grouped_ents = sample_ents_according_to_popularity(10, [10 for _ in range(10)])
+    grouped_ents = sample_ents_according_to_popularity(10, [10000 for _ in range(10)])
     print(grouped_ents)
-    # sub_wikidata = wikidata_subset(popular_ents, wikidata_dir)
-    # sampled_facts = sample_k_facts(100, sub_wikidata)
-    # write_json(sampled_facts, './100_sampled_facts.json')
-    # print(f'{len(sampled_facts)} facts were sampled')
-    # print(f'Examples: {random.sample(sampled_facts), 10}')
+    sampled_ents = []
+    for group in grouped_ents:
+        sampled_ents.extend(group)
+    sampled_facts = [list(sample_fact_given_subject(subject)) for subject in sampled_ents]
+    write_json(sampled_facts, '../generations/sampled_facts2.json')
+    print(f'{len(sampled_facts)} facts were sampled')
+    print(f'Examples: {random.sample(sampled_facts), 10}')
 
 

@@ -63,17 +63,23 @@ def get_targets_given_item_and_relation(item: WikidataItem, relation_id: str):
     return target_ids
 
 
+def is_relation_associated(ent_id, relation_id):
+    if ent_id is None:
+        return False
+    return len(get_targets_given_item_and_relation(wikidata_item_given_id(ent_id), relation_id)) > 0
+
+
 def subject_relation_to_targets(subject_id: str, relation):
     relation_id = relation.id()
     subject_item = wikidata_item_given_id(subject_id)
     return get_targets_given_item_and_relation(subject_item, relation_id)
 
 
-# ent_label2id_dict = load_json('./wikidata/ent_label2id.json')
-#
-#
-# def ent_label2id(label: str):
-#     if label not in ent_label2id_dict:
-#         return None
-#     return ent_label2id_dict[label]
+ent_label2id_dict = load_json('./ent_label2id.json')
+
+
+def ent_label2id(label: str):
+    if label not in ent_label2id_dict:
+        return None
+    return ent_label2id_dict[label]
 
