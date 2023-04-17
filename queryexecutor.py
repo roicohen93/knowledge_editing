@@ -49,7 +49,7 @@ class GPT2QueryExecutor(QueryExecutor):
             tokenizer = AutoTokenizer.from_pretrained(f'gpt2-{self._model_size}')
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
-            model = GPT2LMHeadModel.from_pretrained(f'gpt2-{self._model_size}', pad_token_id=tokenizer.eos_token_id)
+            model = GPT2LMHeadModel.from_pretrained(f'gpt2-{self._model_size}', pad_token_id=tokenizer.eos_token_id, low_cpu_mem_usage=True)
         super().__init__(model, tokenizer, device)
 
     def copy(self):

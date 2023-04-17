@@ -27,6 +27,7 @@ class TestRunner:
 
         # Modify model
         modified_query_executor = self._query_executor.copy()
+        del self._query_executor._model
         edited_model = self._model_editor.edit_model(modified_query_executor.get_model(),
                                                      modified_query_executor.get_tokenizer(),
                                                      fact)
