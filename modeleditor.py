@@ -4,11 +4,24 @@ import os
 
 class ModelEditor:
 
+    def __init__(self, model_name=None):
+        self._model_name = model_name
+
+    @staticmethod
+    def _format_fact_for_rome(fact):
+        subject = fact.get_subject_label()
+        target = fact.get_target_label()
+        prompt = fact.get_fact_prompt().replace(subject, '{}')
+        return [{'prompt': prompt, 'subject': subject, 'target_new': {'str': target}}]
+
     def edit_model(self, model, tokenizer, fact):
         raise NotImplementedError()  # Override in concrete classes
 
 
 class MEMITModelEditor(ModelEditor):
+
+    def __init__(self, model_name):
+        super().__init__(model_name)
 
     def edit_model(self, model, tokenizer, fact):
         # TODO: Fixup imports
@@ -16,11 +29,8 @@ class MEMITModelEditor(ModelEditor):
         sys.path.append('.')
         from memit import MEMITHyperParams, apply_memit_to_model
 
-        subject = fact.get_subject_label()
-        target = fact.get_target_label()
-        prompt = fact.get_fact_prompt().replace(subject, '{}')
-        requests = [{'prompt': prompt, 'subject': subject, 'target_new': {'str': target}}]
-        hparams = MEMITHyperParams.from_json('hparams/MEMIT/gpt2-xl.json')
+        requests = self._format_fact_for_rome(fact)
+        hparams = MEMITHyperParams.from_json(f'hparams/MEMIT/{self._model_name}.json')
         new_model, _ = apply_memit_to_model(model, tokenizer, requests, hparams)
 
         sys.path.remove('.')
@@ -30,17 +40,17 @@ class MEMITModelEditor(ModelEditor):
 
 class ROMEModelEditor(ModelEditor):
 
+    def __init__(self, model_name):
+        super().__init__(model_name)
+
     def edit_model(self, model, tokenizer, fact):
         # TODO: Fixup imports
         os.chdir('./rome')
         sys.path.append('.')
         from rome import ROMEHyperParams, apply_rome_to_model
 
-        subject = fact.get_subject_label()
-        target = fact.get_target_label()
-        prompt = fact.get_fact_prompt().replace(subject, '{}')
-        requests = [{'prompt': prompt, 'subject': subject, 'target_new': {'str': target}}]
-        hparams = ROMEHyperParams.from_json('hparams/ROME/gpt2-xl.json')
+        requests = self._format_fact_for_rome(fact)
+        hparams = ROMEHyperParams.from_json(f'hparams/ROME/{self._model_name}.json')
         new_model, _ = apply_rome_to_model(model, tokenizer, requests, hparams)
 
         sys.path.remove('.')
@@ -50,17 +60,17 @@ class ROMEModelEditor(ModelEditor):
 
 class MENDModelEditor(ModelEditor):
 
+    def __init__(self, model_name):
+        super().__init__(model_name)
+
     def edit_model(self, model, tokenizer, fact):
         # TODO: Fixup imports
         os.chdir('./rome')
         sys.path.append('.')
         from baselines.mend import MENDHyperParams, MendRewriteExecutor
 
-        subject = fact.get_subject_label()
-        target = fact.get_target_label()
-        prompt = fact.get_fact_prompt().replace(subject, '{}')
-        requests = [{'prompt': prompt, 'subject': subject, 'target_new': {'str': target}}]
-        hparams = MENDHyperParams.from_json('hparams/MEND/gpt2-xl.json')
+        requests = self._format_fact_for_rome(fact)
+        hparams = MENDHyperParams.from_json(f'hparams/MEND/{self._model_name}.json')
         new_model, _ = MendRewriteExecutor().apply_to_model(model, tokenizer, requests, hparams)
 
         sys.path.remove('.')

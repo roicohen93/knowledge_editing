@@ -40,16 +40,17 @@ class QueryExecutor:
 
 class GPT2QueryExecutor(QueryExecutor):
 
-    def __init__(self, model=None, tokenizer=None):
+    def __init__(self, model_size='xl', model=None, tokenizer=None):
+        self._model_size = model_size
         if tokenizer is None:
-            tokenizer = AutoTokenizer.from_pretrained("gpt2-xl")
+            tokenizer = AutoTokenizer.from_pretrained(f'gpt2-{self._model_size}')
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
-            model = GPT2LMHeadModel.from_pretrained("gpt2-xl", pad_token_id=tokenizer.eos_token_id)
+            model = GPT2LMHeadModel.from_pretrained(f'gpt2-{self._model_size}', pad_token_id=tokenizer.eos_token_id)
         super().__init__(model, tokenizer)
 
     def copy(self):
-        return GPT2QueryExecutor(deepcopy(self._model), deepcopy(self._tokenizer))
+        return GPT2QueryExecutor(self._model_size, deepcopy(self._model), deepcopy(self._tokenizer))
 
     def _generate_text(self, prompt, length):
         inputs = self._tokenizer.encode(prompt, return_tensors='pt').to(self._device)
