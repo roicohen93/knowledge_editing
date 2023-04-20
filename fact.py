@@ -30,3 +30,7 @@ class Fact:
             'relation': self._relation.name,
             'target_id': self._target_id
         }
+
+    def __str__(self):
+        return f'({self.get_subject_label()}, {self.get_relation_label()}, {self.get_target_label()})'
+
