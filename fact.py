@@ -1,4 +1,5 @@
 from wikidata.utils import get_label
+from query import Query
 
 
 class Fact:
@@ -16,6 +17,9 @@ class Fact:
 
     def get_relation_label(self):
         return self._relation.name.replace('_', ' ')
+
+    def get_fact_query(self):
+        return Query(self._subject_id, self._relation, self._target_id)
 
     def get_fact_prompt(self):
         return self._relation.phrase(get_label(self._subject_id))
