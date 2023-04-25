@@ -16,7 +16,10 @@ class Evaluator:
         self._test_runner = TestRunner(query_executor, model_editor)
 
     def average_acc(self, fact: Fact, test_cases: list):
-        res_dict = self._test_runner.run_testcases(fact, test_cases)
+        run_res = self._test_runner.run_testcases(fact, test_cases)
+        fact_edit_succeeded, res_dict = run_res
+        if not fact_edit_succeeded:
+            return -1
         didnt_execute = len(res_dict[TestResult.NOT_EXECUTED])
         successes = len(res_dict[TestResult.PASSED])
         fails = len(res_dict[TestResult.FAILED])
