@@ -17,3 +17,14 @@ class TestCase:
             'test_query': self._test_query.to_dict(),
             'condition_queries': [query.to_dict() for query in self._condition_queries]
         }
+
+    def __str__(self):
+        test_query_dict = self._test_query.to_dict()
+        res = f"Test Query: {test_query_dict['input_prompt']}, " \
+              f"Answer: {test_query_dict['answers'][0]['value']}\n"
+        res += 'Condition Queries:\n'
+        for query in self._condition_queries:
+            query_dict = query.to_dict()
+            res += f"Query: {query_dict['input_prompt']}, " \
+                   f"Answer: {query_dict['answers'][0]['value']}\n"
+        return res

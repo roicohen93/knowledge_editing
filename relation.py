@@ -39,12 +39,19 @@ class Relation(Enum):
         return subject_relation_to_targets(subject, self._relation_id)
 
     def impacted_relations(self):
-        return [Relation[r] for r in self._impacted_relations]
+        return [self.string_to_enum(r) for r in self._impacted_relations]
 
     @staticmethod
     def string_to_enum(relation_name: str):
         processed_relation_name = relation_name.replace(' ', '_')
         for relation in Relation:
             if compute_exact_match(processed_relation_name, relation.name):
+                return relation
+        return None
+
+    @staticmethod
+    def id_to_enum(relation_id: str):
+        for relation in Relation:
+            if compute_exact_match(relation_id, relation.id()):
                 return relation
         return None

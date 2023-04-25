@@ -47,6 +47,8 @@ class ROMEModelEditor(ModelEditor):
         # TODO: Fixup imports
         os.chdir('./rome')
         sys.path.append('.')
+        sys.path.append('./rome')
+        sys.path.append('./rome/util')
         from rome import ROMEHyperParams, apply_rome_to_model
 
         requests = self._format_fact_for_rome(fact)

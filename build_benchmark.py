@@ -29,6 +29,31 @@ def construct_counterfactuals_benchmark():
     return Dataset(dataset_list)
 
 
+def construct_recently_modified_benchmark(size: int = None):
+    current_data = load_json('./generations/uniformly_from_recent_days_recently_modified_dataset.json')
+    if size is not None:
+        current_data = random.sample(current_data, min(size, len(current_data)))
+    dataset_list = []
+    for subject_id, relation_id, target_id in current_data:
+        relation_enum = Relation.id_to_enum(relation_id)
+        if relation_enum is None:
+            continue
+        dataset_list.append(build_dataset_example(subject_id, relation_enum, target_id))
+    return Dataset(dataset_list)
+
+
+def build_dataset_example(subject_id: str, relation: Relation, target_id: str):
+    fact = Fact(subject_id, relation, target_id)
+    making_up_tests = making_up_axis(subject_id, relation)
+    logical_constraints = logical_constraints_axis(subject_id, relation, target_id)
+    curr_example = RecentlyAddedExample(
+        fact=fact,
+        making_up_tests=making_up_tests,
+        logical_constraints=logical_constraints,
+    )
+    return curr_example
+
+
 if __name__ == '__main__':
     # recent_week_mother_modified = recently_modified_facts_given_relation(
     #     our_relations['mother'],
@@ -51,8 +76,14 @@ if __name__ == '__main__':
     # for example in example_benchmark:
     #     print(example)
 
-    counterfactuals_dataset = construct_counterfactuals_benchmark()
-    print(counterfactuals_dataset.sample(5)[0])
+    # counterfactuals_dataset = construct_counterfactuaals_benchmark()
+    # print(counterfactuals_dataset.sample(5)[0])
+
+    recently_modified_facts = construct_recently_modified_benchmark(20)
+    for example in recently_modified_facts.sample(20):
+        print(example)
+
+
 
 
 

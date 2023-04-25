@@ -1,7 +1,7 @@
 import sys
 import random
-from relations import our_relations
-from utils import write_json
+from wikidata.relations import our_relations
+from wikidata.utils import write_json
 from qwikidata.sparql import (get_subclasses_of_item,
                               return_sparql_query_results)
 from qwikidata.json_dump import WikidataJsonDump

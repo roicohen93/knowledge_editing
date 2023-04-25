@@ -17,7 +17,7 @@ def making_up_axis(subject_id: str, relation: Relation):
     for other_relation in Relation:
         if other_relation == relation or other_relation in impacted_relations:
             continue
-        corresponding_targets = subject_relation_to_targets(subject_id, our_relations[other_relation])
+        corresponding_targets = subject_relation_to_targets(subject_id, other_relation)
         if not corresponding_targets:
             continue
         test_query = Query(subject_id, other_relation, corresponding_targets)

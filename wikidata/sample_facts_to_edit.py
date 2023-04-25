@@ -23,8 +23,15 @@ def ent_and_num_of_facts_lists():
 
 def ent_and_num_of_facts_lists_filtered():
     ent2num_of_facts = load_json('./subject2num_of_facts.json')
-    filtered_ent2num_of_facts = {ent: num_of_facts for ent, num_of_facts in ent2num_of_facts.items()
-                                 if is_interesting_ent(ent)}
+    sampled_ents = random.sample(list(ent2num_of_facts.items()), 10000)
+    filtered_ent2num_of_facts = dict()
+    i = 0
+    for ent, num_of_facts in sampled_ents:
+        i += 1
+        if is_interesting_ent(ent):
+            filtered_ent2num_of_facts[ent] = num_of_facts
+        if i % 100 == 0:
+            print(f'{i}/{len(sampled_ents)}')
     num_of_ents = len(filtered_ent2num_of_facts)
     ents_list, num_of_facts_list = [None for _ in range(num_of_ents)], np.zeros(num_of_ents)
 
@@ -38,14 +45,15 @@ def ent_and_num_of_facts_lists_filtered():
 
 def ent_and_num_of_facts_lists_filtered2():
     ent2num_of_facts = load_json('./subject2num_of_facts.json')
+    sampled_ents = random.sample(list(ent2num_of_facts.items()), 10000)
     filtered_ent2num_of_facts = dict()
     i = 0
-    for ent, num_of_facts in ent2num_of_facts.items():
+    for ent, num_of_facts in sampled_ents:
         i += 1
         if is_interesting_ent2(ent):
             filtered_ent2num_of_facts[ent] = num_of_facts
         if i % 100 == 0:
-            print(f'{i}/{len(ent2num_of_facts)}')
+            print(f'{i}/{len(sampled_ents)}')
     num_of_ents = len(filtered_ent2num_of_facts)
     ents_list, num_of_facts_list = [None for _ in range(num_of_ents)], np.zeros(num_of_ents)
 
@@ -84,7 +92,7 @@ def top_k_most_popular_subjects(k: int):
 
 
 def divide_ents_per_popularity(num_of_divisions: int):
-    ents_list, num_of_facts_list = ent_and_num_of_facts_lists_filtered2()
+    ents_list, num_of_facts_list = ent_and_num_of_facts_lists_filtered()
     size_of_each_division = len(ents_list) // num_of_divisions
     sorted_idx = np.argsort(num_of_facts_list)
     idx_groups = []
@@ -156,7 +164,7 @@ if __name__ == '__main__':
     for group in grouped_ents:
         sampled_ents.extend(group)
     sampled_facts = [list(sample_fact_given_subject(subject)) for subject in sampled_ents]
-    write_json(sampled_facts, '../generations/sampled_facts2.json')
+    write_json(sampled_facts, '../generations/sampled_facts100K.json')
     print(f'{len(sampled_facts)} facts were sampled')
     print(f'Examples: {random.sample(sampled_facts), 10}')
 
