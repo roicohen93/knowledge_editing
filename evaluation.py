@@ -3,6 +3,9 @@ from testcase import TestCase
 from benchmark import Dataset, Example, TestsAxis
 from fact import Fact
 from collections import defaultdict
+from build_benchmark import construct_recently_modified_benchmark
+from queryexecutor import GPT2QueryExecutor
+from modeleditor import ROMEModelEditor
 
 
 class Evaluator:
@@ -32,7 +35,7 @@ class Evaluator:
         return self.average_acc(example.fact, example.two_hop_tests)
 
     def evaluate_prev_storage_tests(self, example: Example):
-        return self.average_acc(example.fact, example.prev_storage_test)
+        return self.average_acc(example.fact, example.prev_storage_tests)
 
     def evaluate(self, example: Example):
         res = defaultdict()
@@ -42,3 +45,10 @@ class Evaluator:
         res[TestsAxis.TWO_HOP] = self.evaluate_two_hop_tests(example)
         res[TestsAxis.PREVIOUS_STORAGE] = self.evaluate_prev_storage_tests(example)
         return res
+
+
+if __name__ == '__main__':
+    evaluator = Evaluator(query_executor=GPT2QueryExecutor(model_size='medium'), model_editor=ROMEModelEditor('gpt2-medium'))
+    recently_modified_facts = construct_recently_modified_benchmark(1000)
+    for example in recently_modified_facts.sample(500):
+        print(evaluator.evaluate(example)[TestsAxis.MAKING_UP])
