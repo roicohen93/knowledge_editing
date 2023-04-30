@@ -1,6 +1,7 @@
 from wikidata.utils import get_label, get_aliases, write_to_csv
 import openai
-openai.api_key = "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"
+from openai_key.openai_key import my_openai_key
+openai.api_key = my_openai_key
 
 
 def create_test_example_given_input_targets(input_prompt: str, targets: list):
@@ -38,7 +39,7 @@ def compute_exact_match(prediction, truth):
 
 
 def call_openai(prompt, model='text-davinci-003', temperature=0, max_tokens=15):
-    response = openai.Completion.create(
+    response = openai_key.Completion.create(
         model=model,
         prompt=prompt,
         temperature=temperature,
