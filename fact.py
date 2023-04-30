@@ -24,6 +24,9 @@ class Fact:
     def get_fact_prompt(self):
         return self._relation.phrase(get_label(self._subject_id))
 
+    def get_fact_phrased(self):
+        return self._relation.phrase(get_label(self._subject_id)) + f' {get_label(self._target_id)}'
+
     def to_dict(self):
         return {
             'subject_id': self._subject_id,

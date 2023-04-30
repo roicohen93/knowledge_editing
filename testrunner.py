@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from modeleditor import InContextModelEditor
 
 
 class TestResult(Enum):
@@ -16,10 +17,13 @@ class TestRunner:
     def run_testcases(self, fact, test_cases):
         # Modify model
         modified_query_executor = self._query_executor.copy()
-        edited_model = self._model_editor.edit_model(modified_query_executor.get_model(),
-                                                     modified_query_executor.get_tokenizer(),
-                                                     fact)
-        modified_query_executor.set_model(edited_model)
+        if isinstance(self._model_editor, InContextModelEditor):
+            modified_query_executor = self._model_editor.edit_model(fact)
+        else:
+            edited_model = self._model_editor.edit_model(modified_query_executor.get_model(),
+                                                         modified_query_executor.get_tokenizer(),
+                                                         fact)
+            modified_query_executor.set_model(edited_model)
 
         # Test edit
         if not modified_query_executor.execute_query(fact.get_fact_query()):

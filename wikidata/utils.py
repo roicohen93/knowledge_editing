@@ -16,6 +16,33 @@ def write_json(d: dict, path: str):
         json.dump(d, f)
 
 
+def add_to_json(d, path):
+    with open(path, 'r+', encoding='utf-8') as f:
+        curr_data = json.load(f)
+    if isinstance(curr_data, list):
+        new_data = curr_data + d
+    elif isinstance(curr_data, dict):
+        curr_data.update(d)
+    with open(path, 'w+', encoding='utf-8') as f:
+        json.dump(new_data, f)
+
+
+def write_to_csv(path: str, table: list):
+    with open(path, 'a+', encoding='utf-8') as f:
+        csv_writer = csv.writer(f)
+        for line in table:
+            csv_writer.writerow(line)
+
+
+def read_from_csv(path: str):
+    table = []
+    with open(path, 'r+', encoding='utf-8') as f:
+        csv_reader = csv.reader(f)
+        for line in csv_reader:
+            table.append(line)
+    return table
+
+
 def retrieve_from_wikidata(ent: str, wikidata_dir: str = './wikidata_full_kg/filtered_relations'):
     if not ent:
         return None
@@ -82,11 +109,11 @@ def subject_relation_to_targets(subject_id: str, relation):
     return get_targets_given_item_and_relation(subject_item, relation_id)
 
 
-# ent_label2id_dict = load_json('./wikidata/ent_label2id.json')
-#
-#
-# def ent_label2id(label: str):
-#     if label not in ent_label2id_dict:
-#         return None
-#     return ent_label2id_dict[label]
+ent_label2id_dict = load_json('./wikidata/ent_label2id.json')
+
+
+def ent_label2id(label: str):
+    if label not in ent_label2id_dict:
+        return None
+    return ent_label2id_dict[label]
 

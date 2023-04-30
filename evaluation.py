@@ -4,8 +4,9 @@ from benchmark import Dataset, Example, TestsAxis
 from fact import Fact
 from collections import defaultdict
 from build_benchmark import construct_recently_modified_benchmark
-from queryexecutor import GPT2QueryExecutor
-from modeleditor import ROMEModelEditor
+from queryexecutor import GPT2QueryExecutor, GPT3QueryExecutor
+from modeleditor import ROMEModelEditor, InContextNaiveModelEditor
+from wikidata.utils import write_json, add_to_json
 
 
 class Evaluator:
@@ -18,12 +19,13 @@ class Evaluator:
     def average_acc(self, fact: Fact, test_cases: list):
         run_res = self._test_runner.run_testcases(fact, test_cases)
         fact_edit_succeeded, res_dict = run_res
-        if not fact_edit_succeeded:
+        if not fact_edit_succeeded or not len(test_cases):
             return -1
         didnt_execute = len(res_dict[TestResult.NOT_EXECUTED])
         successes = len(res_dict[TestResult.PASSED])
         fails = len(res_dict[TestResult.FAILED])
-        return successes / (successes + fails) if successes else 0.0, didnt_execute
+        executed = (successes + fails) / (successes + fails + didnt_execute)
+        return successes / (successes + fails) if successes else 0.0, executed, len(test_cases)
 
     def evaluate_making_up_axis(self, example: Example):
         return self.average_acc(example.fact, example.making_up_tests)
@@ -51,7 +53,41 @@ class Evaluator:
 
 
 if __name__ == '__main__':
-    evaluator = Evaluator(query_executor=GPT2QueryExecutor(model_size='medium'), model_editor=ROMEModelEditor('gpt2-medium'))
-    recently_modified_facts = construct_recently_modified_benchmark(1000)
-    for example in recently_modified_facts.sample(500):
-        print(evaluator.evaluate(example)[TestsAxis.MAKING_UP])
+    davinvi_query_executor = GPT3QueryExecutor(model_size='text-davinci-003')
+    evaluator = Evaluator(query_executor=davinvi_query_executor, model_editor=InContextNaiveModelEditor(davinvi_query_executor))
+    recently_modified_facts = construct_recently_modified_benchmark(500)
+
+    precisions_json = dict()
+    num_of_examples = 100
+    succeeded_edits = 0
+    average_precision = 0
+    average_executed = 0
+    average_size = 0
+    total_checked_examples = 0
+    for i, example in enumerate(recently_modified_facts.sample(num_of_examples)):
+        if i % 5 == 0:
+            print(f'{i+1}/{num_of_examples}')
+        try:
+            davinvi_query_executor.clean_editing_prompt()
+            making_up_results = evaluator.evaluate(example)[TestsAxis.MAKING_UP]
+            if making_up_results == -1:
+                continue
+            succeeded_edits += 1
+            precision, executed, size = evaluator.evaluate(example)[TestsAxis.MAKING_UP]
+            average_precision += precision
+            average_executed += executed
+            average_size += size
+            precisions_json[str(example.fact)] = precision
+            total_checked_examples += 1
+        except :
+            continue
+
+    average_precision /= total_checked_examples
+    average_executed /= total_checked_examples
+    average_size /= total_checked_examples
+    print(f'{(succeeded_edits / num_of_examples)*100} successful edits (out of {num_of_examples})')
+    print(f'Average making-up precision is {average_precision}')
+    print(f'Average portion of executed_tests is {average_executed}')
+    print(f'Average total number of tests is {average_size}')
+
+    add_to_json(d=precisions_json, path='./results_data/some_consistency_results.json')

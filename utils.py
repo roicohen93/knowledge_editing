@@ -1,4 +1,6 @@
-from wikidata.utils import get_label, get_aliases
+from wikidata.utils import get_label, get_aliases, write_to_csv
+import openai
+openai.api_key = "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"
 
 
 def create_test_example_given_input_targets(input_prompt: str, targets: list):
@@ -33,3 +35,29 @@ def normalize_text(s):
 
 def compute_exact_match(prediction, truth):
     return int(normalize_text(prediction) == normalize_text(truth))
+
+
+def call_openai(prompt, model='text-davinci-003', temperature=0, max_tokens=15):
+    response = openai.Completion.create(
+        model=model,
+        prompt=prompt,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        top_p=1.0,
+        frequency_penalty=0.0,
+        presence_penalty=0.0,
+        logprobs=5,
+        # stop=["\"\"\""],
+    )
+    top_logprobs = response['choices'][0]['logprobs']['top_logprobs']
+    text = response['choices'][0]['text']
+    write_to_csv('./gpt3_data/gpt3_calls.csv', [[prompt, text]])
+    return text, top_logprobs
+
+
+def process_generation(text: str):  #diffrence between this and normlize text?? ask roi
+    if not text:
+        return text
+    while text and text[0] in ['\n', ':', ' ', ',', ';']:
+        text = text[1:]
+    return text
