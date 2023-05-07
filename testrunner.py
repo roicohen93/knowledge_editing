@@ -40,7 +40,11 @@ class TestRunner:
 
             # Test modified model
             if test_case not in results[TestResult.NOT_EXECUTED]:
-                if modified_query_executor.execute_query(test_case.get_test_query()):
+                test_case_results = [modified_query_executor.execute_query(test_query)
+                                     for test_query in test_case.get_test_queries()]
+                if test_case.get_test_condition() == TestCase.OR_TEST_CONDITION and True in test_case_results:
+                    results[TestResult.PASSED].append(test_case)
+                elif test_case.get_test_condition() == TestCase.AND_TEST_CONDITION and False not in test_case_results:
                     results[TestResult.PASSED].append(test_case)
                 else:
                     results[TestResult.FAILED].append(test_case)
@@ -60,6 +64,9 @@ if __name__ == '__main__':
     tq = Query('Q76', Relation.UNCLE, ['Q210593'])  # Barack Obama's uncle is Luigi
     cq = Query('Q12379', Relation.BROTHER, ['Q210593'])  # Mario's brother is Luigi
     tc = TestCase(tq, [cq])
-    tr = TestRunner(GPT2QueryExecutor(model_size='xl'), ROMEModelEditor('gpt2-xl'))
+    tr = TestRunner(GPT2QueryExecutor(model_size='medium', device='cpu'), ROMEModelEditor('gpt2-medium'))
     res = tr.run_testcases(f, [tc])
+    print('------')
+    print(f)
+    print(tc)
     print(res)
