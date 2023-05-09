@@ -61,7 +61,7 @@ class GPT2QueryExecutor(QueryExecutor):
 
     def _generate_text(self, prompt, length):
         inputs = self._tokenizer.encode(prompt, return_tensors='pt').to(self._device)
-        outputs = self._model.generate(inputs, do_sample=True, max_length=length, top_k=5)
+        outputs = self._model.generate(inputs, temperature=0, max_length=length)
         return self._tokenizer.decode(outputs[0], skip_special_tokens=True)
 
 
