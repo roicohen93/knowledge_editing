@@ -16,8 +16,8 @@ class Evaluator:
         self._model_editor = model_editor
         self._test_runner = TestRunner(query_executor, model_editor)
 
-    def average_acc(self, fact: Fact, test_cases: list):
-        run_res = self._test_runner.run_testcases(fact, test_cases)
+    def average_acc(self, example: Example, test_cases: list):
+        run_res = self._test_runner.run_testcases(example, test_cases)
         fact_edit_succeeded, res_dict = run_res
         if not fact_edit_succeeded or not len(test_cases):
             return -1
@@ -28,19 +28,19 @@ class Evaluator:
         return successes / (successes + fails) if successes else 0.0, executed, len(test_cases)
 
     def evaluate_making_up_axis(self, example: Example):
-        return self.average_acc(example.fact, example.making_up_tests)
+        return self.average_acc(example, example.making_up_tests)
 
     def evaluate_logical_constraints(self, example: Example):
-        return self.average_acc(example.fact, example.logical_constraints)
+        return self.average_acc(example, example.logical_constraints)
 
     def evaluate_subject_paraphrasing(self, example: Example):
-        return self.average_acc(example.fact, example.subject_paraphrasing_tests)
+        return self.average_acc(example, example.subject_paraphrasing_tests)
 
     def evaluate_two_hop_tests(self, example: Example):
-        return self.average_acc(example.fact, example.two_hop_tests)
+        return self.average_acc(example, example.two_hop_tests)
 
     def evaluate_prev_storage_tests(self, example: Example):
-        return self.average_acc(example.fact, example.prev_storage_tests)
+        return self.average_acc(example, example.prev_storage_tests)
 
     def evaluate(self, example: Example):
         res = defaultdict()
