@@ -55,15 +55,15 @@ class Evaluator:
 
 if __name__ == '__main__':
     davinvi_query_executor = GPT3QueryExecutor(model_size='text-davinci-003')
-    gpt2_query_executor = GPT2QueryExecutor('large')
+    gpt2_query_executor = GPT2QueryExecutor('medium')
     gptj_query_executor = GPTJQueryExecutor()
-    rome_editor = ROMEModelEditor('gpt2-large')
+    rome_editor = ROMEModelEditor('gpt2-medium')
     # evaluator = Evaluator(query_executor=davinvi_query_executor, model_editor=InContextNaiveModelEditor(davinvi_query_executor))
     evaluator = Evaluator(query_executor=gpt2_query_executor, model_editor=rome_editor)
-    recently_modified_facts = construct_recently_modified_benchmark(200)
+    recently_modified_facts = construct_recently_modified_benchmark(5000)
 
     precisions_json = dict()
-    num_of_examples = 20
+    num_of_examples = 2000
     succeeded_edits = 0
     average_precision = 0
     average_executed = 0
