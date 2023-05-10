@@ -32,7 +32,7 @@ class QueryExecutor:
                 return False
         return True
 
-    def execute_query(self, query, answer_length=20):
+    def execute_query(self, query, answer_length=30):
         model_answer = self._generate_text(query.get_query_prompt(), answer_length)
         print(f'query: {query.to_dict()}\nmodel answer: {model_answer}')
         return self._verify_answer(model_answer, query.get_answers())

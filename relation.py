@@ -58,10 +58,11 @@ class Relation(Enum):
     DATE_OF_DEATH = ('P570', 'The date in which <subject> was died in is', ['is alive'], True)
     IS_ALIVE = ('', 'Is <subject> still alive or is he dead?', ['place of death', 'place of burial', 'date of death'], True)
 
-    def __init__(self, relation_id, phrase, impacted_relations):
+    def __init__(self, relation_id, phrase, impacted_relations, is_modification):
         self._relation_id = relation_id
         self._phrase = phrase
         self._impacted_relations = impacted_relations
+        self._is_modification = is_modification
 
     def id(self):
         return self._relation_id
@@ -74,6 +75,9 @@ class Relation(Enum):
 
     def impacted_relations(self):
         return [self.string_to_enum(r) for r in self._impacted_relations]
+
+    def is_modification(self):
+        return self._is_modification
 
     @staticmethod
     def string_to_enum(relation_name: str):
