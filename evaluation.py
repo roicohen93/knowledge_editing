@@ -54,8 +54,11 @@ class Evaluator:
 
 if __name__ == '__main__':
     davinvi_query_executor = GPT3QueryExecutor(model_size='text-davinci-003')
-    evaluator = Evaluator(query_executor=davinvi_query_executor, model_editor=InContextNaiveModelEditor(davinvi_query_executor))
-    recently_modified_facts = construct_recently_modified_benchmark(500)
+    gpt2_query_executor = GPT2QueryExecutor('medium')
+    rome_editor = ROMEModelEditor('gpt2-medium')
+    # evaluator = Evaluator(query_executor=davinvi_query_executor, model_editor=InContextNaiveModelEditor(davinvi_query_executor))
+    evaluator = Evaluator(query_executor=gpt2_query_executor, model_editor=rome_editor)
+    recently_modified_facts = construct_recently_modified_benchmark(200)
 
     precisions_json = dict()
     num_of_examples = 100
@@ -69,7 +72,8 @@ if __name__ == '__main__':
             print(f'{i+1}/{num_of_examples}')
         try:
             davinvi_query_executor.clean_editing_prompt()
-            making_up_results = evaluator.evaluate(example)[TestsAxis.MAKING_UP]
+            evaluation_results = evaluator.evaluate(example)
+            making_up_results = evaluation_results[TestsAxis.MAKING_UP]
             if making_up_results == -1:
                 continue
             succeeded_edits += 1
