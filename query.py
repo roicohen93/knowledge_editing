@@ -27,7 +27,7 @@ class Query:
     def to_dict(self):
         return {
             'input_prompt': self.get_query_prompt(),
-            'answers': [{'value': get_label(target), 'aliases': get_aliases(target)} if type(target) == str
+            'answers': [{'value': get_label(target), 'aliases': get_aliases(target)} if type(target) == str and target[0] == 'Q'
                         else {'value': str(target), 'aliases': []} for target in self._targets_ids]
         }
 
@@ -55,6 +55,6 @@ class TwoHopQuery(Query):
     def to_dict(self):
         return {
             'input_prompt': self.get_query_prompt(),
-            'answers': [{'value': get_label(target), 'aliases': get_aliases(target)} if type(target) == str
+            'answers': [{'value': get_label(target), 'aliases': get_aliases(target)} if type(target) == str and target[0] == 'Q'
                         else {'value': str(target), 'aliases': []} for target in self._second_hop_targets_ids]
         }

@@ -45,6 +45,7 @@ def subject_aliasing_axis(subject_id: str, relation: Relation, target_id: str):
 
 def two_hop_axis(subject_id: str, relation: Relation, target_id: str):
     tests = []
+    print(target_id)
     if not target_id or target_id[0] != 'Q':
         return tests
     target_relations = ent_to_relation_ids(target_id)
