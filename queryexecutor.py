@@ -1,5 +1,5 @@
 import torch
-from transformers import GPT2LMHeadModel, AutoTokenizer
+from transformers import GPT2LMHeadModel, GPTJForCausalLM, AutoTokenizer
 from copy import deepcopy
 from utils import call_openai, process_generation
 
@@ -34,7 +34,6 @@ class QueryExecutor:
 
     def execute_query(self, query, answer_length=20):
         model_answer = self._generate_text(query.get_query_prompt(), answer_length)
-        print(query)
         print(f'query: {query.to_dict()}\nmodel answer: {model_answer}')
         return self._verify_answer(model_answer, query.get_answers())
 
@@ -45,7 +44,21 @@ class QueryExecutor:
         raise NotImplementedError()  # Override in concrete classes
 
 
-class GPT2QueryExecutor(QueryExecutor):
+class HFGPTQueryExecutor(QueryExecutor):
+
+    def __init__(self, model=None, tokenizer=None, device=None):
+        super().__init__(model, tokenizer, device)
+
+    def copy(self):
+        raise NotImplementedError()  # Override in concrete classes
+
+    def _generate_text(self, prompt, length):
+        inputs = self._tokenizer.encode(prompt, return_tensors='pt').to(self._device)
+        outputs = self._model.generate(inputs, temperature=0, max_length=length)
+        return self._tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+
+class GPT2QueryExecutor(HFGPTQueryExecutor):
 
     def __init__(self, model_size='xl', device=None, model=None, tokenizer=None):
         self._model_size = model_size
@@ -59,10 +72,19 @@ class GPT2QueryExecutor(QueryExecutor):
     def copy(self):
         return GPT2QueryExecutor(self._model_size, self._device, deepcopy(self._model), deepcopy(self._tokenizer))
 
-    def _generate_text(self, prompt, length):
-        inputs = self._tokenizer.encode(prompt, return_tensors='pt').to(self._device)
-        outputs = self._model.generate(inputs, do_sample=True, max_length=length, top_k=5)
-        return self._tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+class GPTJQueryExecutor(HFGPTQueryExecutor):
+
+    def __init__(self, device=None, model=None, tokenizer=None):
+        if tokenizer is None:
+            tokenizer = AutoTokenizer.from_pretrained('EleutherAI/gpt-j-6B')
+            tokenizer.pad_token = tokenizer.eos_token
+        if model is None:
+            model = GPTJForCausalLM.from_pretrained('EleutherAI/gpt-j-6B', pad_token_id=tokenizer.eos_token_id)
+        super().__init__(model, tokenizer, device)
+
+    def copy(self):
+        return GPTJQueryExecutor(self._device, deepcopy(self._model), deepcopy(self._tokenizer))
 
 
 class GPT3QueryExecutor(QueryExecutor):
