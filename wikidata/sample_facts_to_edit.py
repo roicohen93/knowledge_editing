@@ -2,7 +2,8 @@ import json
 import os
 import numpy as np
 import random
-from utils import load_json, write_json, ent_label2id, is_relation_associated, subject_relation_to_targets, retrieve_from_wikidata
+from utils import load_json, write_json, ent_label2id, is_relation_associated, is_relations_associated, \
+    subject_relation_to_targets, retrieve_from_wikidata
 from config import checkable_relations
 from collections import defaultdict
 from relations import our_relations
@@ -23,7 +24,7 @@ def ent_and_num_of_facts_lists():
 
 def ent_and_num_of_facts_lists_filtered():
     ent2num_of_facts = load_json('./subject2num_of_facts.json')
-    sampled_ents = random.sample(list(ent2num_of_facts.items()), 10000)
+    sampled_ents = random.sample(list(ent2num_of_facts.items()), 200000)
     filtered_ent2num_of_facts = dict()
     i = 0
     for ent, num_of_facts in sampled_ents:
@@ -40,7 +41,9 @@ def ent_and_num_of_facts_lists_filtered():
         ents_list[i], num_of_facts_list[i] = ent, num_of_facts
         i += 1
 
-    return ents_list, num_of_facts_list
+    # return ents_list, num_of_facts_list
+    print(f'Number of remained entities is {len(filtered_ent2num_of_facts)}')
+    return filtered_ent2num_of_facts
 
 
 def ent_and_num_of_facts_lists_filtered2():
@@ -67,9 +70,9 @@ def ent_and_num_of_facts_lists_filtered2():
 
 def is_interesting_ent(ent_label: str):
     ent_id = ent_label2id(ent_label)
-    for relation_name, relation_id in our_relations.items():
-        if is_relation_associated(ent_id, relation_id):
-            return True
+    relation_ids = [relation_id for relation_name, relation_id in our_relations.items()]
+    if is_relations_associated(ent_id, relation_ids):
+        return True
     return False
 
 
@@ -92,7 +95,8 @@ def top_k_most_popular_subjects(k: int):
 
 
 def divide_ents_per_popularity(num_of_divisions: int):
-    ents_list, num_of_facts_list = ent_and_num_of_facts_lists_filtered()
+    # ents_list, num_of_facts_list = ent_and_num_of_facts_lists_filtered()
+    ents_list, num_of_facts_list = ent_and_num_of_facts_lists()
     size_of_each_division = len(ents_list) // num_of_divisions
     sorted_idx = np.argsort(num_of_facts_list)
     idx_groups = []
@@ -130,12 +134,14 @@ def wikidata_subset(ents: list, wikidata_dir: str):
 
 def sample_fact_given_subject(subject_label: str):
     subject_id = ent_label2id(subject_label)
-    relations = random.sample(list(our_relations.keys()))
+    if subject_id is None:
+        return ()
+    relations = list(our_relations.keys())
     for relation in relations:
         relation_id = our_relations[relation]
         targets = subject_relation_to_targets(subject_id, relation_id)
         if targets:
-            return subject_id, relation, random.sample(relation, 1)[0]
+            return subject_id, relation, random.sample(targets, 1)[0]
 
 
 def sample_k_facts(k: int, wikidata: dict):
@@ -156,16 +162,51 @@ def sample_k_facts(k: int, wikidata: dict):
     return sampled_facts
 
 
+def union_per_dividers(data, dividers):
+    new_data = []
+    for i in range(1, len(dividers)):
+        prev_div = dividers[i-1]
+        curr_div = dividers[i]
+        curr_group = []
+        for j in range(prev_div, curr_div):
+            curr_group.extend(data[j])
+        new_data.append(curr_group)
+    return new_data
+
+
 if __name__ == '__main__':
+    # filtered_ent2num_of_facts = ent_and_num_of_facts_lists_filtered()
+    # write_json(filtered_ent2num_of_facts, './filtered_ent2num_of_facts.json')
+
     wikidata_dir = './wikidata_full_kg/filtered_relations'
-    grouped_ents = sample_ents_according_to_popularity(10, [10000 for _ in range(10)])
-    print(grouped_ents)
-    sampled_ents = []
-    for group in grouped_ents:
-        sampled_ents.extend(group)
-    sampled_facts = [list(sample_fact_given_subject(subject)) for subject in sampled_ents]
-    write_json(sampled_facts, '../generations/sampled_facts100K.json')
-    print(f'{len(sampled_facts)} facts were sampled')
-    print(f'Examples: {random.sample(sampled_facts), 10}')
+    grouped_ents = sample_ents_according_to_popularity(20, [300000 for _ in range(20)])
+    print('have done with dividing to buckets')
+    print('start filtering...')
+    interesting_dividers = [0, 2, 5, 9, 15]
+    new_groups_division = union_per_dividers(grouped_ents, interesting_dividers)
+    how_many_from_each = 2000
+    filtered_group_ents = []
+    for i, current_full_group in enumerate(new_groups_division):
+        current_group = []
+        print(f'start filtering group {i+1}. Its size is {len(current_full_group)}')
+        for entity in current_full_group:
+            if is_interesting_ent(entity):
+                current_group.append(entity)
+                if len(current_group) % 10 == 0:
+                    print(f'{len(current_group)}/{how_many_from_each}')
+            if len(current_group) > how_many_from_each:
+                break
+        filtered_group_ents.append(current_group)
+        print(f'done with bucket {i+1}')
+    write_json(filtered_group_ents, f'../generations/sampled_entities_divided_to_buckets{how_many_from_each}_.json')
+
+    facts = []
+    for group in filtered_group_ents:
+        sampled_facts = [list(sample_fact_given_subject(subject)) for subject in group if subject is not None]
+        facts.append(sampled_facts)
+    # sampled_facts = [list(sample_fact_given_subject(subject)) for subject in sampled_ents]
+    write_json(facts, f'../generations/sampled_facts_divided_to_buckets{how_many_from_each}_.json')
+    # print(f'{len(sampled_facts)} facts were sampled')
+    # print(f'Examples: {random.sample(sampled_facts), 10}')
 
 

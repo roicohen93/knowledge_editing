@@ -103,13 +103,28 @@ def is_relation_associated(ent_id, relation_id):
     return len(get_targets_given_item_and_relation(ent_item, relation_id)) > 0
 
 
+def is_relations_associated(ent_id, relation_ids: list):
+    try:
+        ent_item = wikidata_item_given_id(ent_id)
+    except:
+        return False
+    related_claims = ent_item.get_truthy_claim_groups()
+    for relation_id in relation_ids:
+        if relation_id in related_claims:
+            return True
+    return False
+
+
 def subject_relation_to_targets(subject_id: str, relation):
-    relation_id = relation.id()
+    if not isinstance(relation, str):
+        relation_id = relation.id()
+    else:
+        relation_id = relation
     subject_item = wikidata_item_given_id(subject_id)
     return get_targets_given_item_and_relation(subject_item, relation_id)
 
 
-ent_label2id_dict = load_json('./wikidata/ent_label2id.json')
+ent_label2id_dict = load_json('./ent_label2id.json')
 
 
 def ent_label2id(label: str):

@@ -54,6 +54,13 @@ class RelationalConstraints:
             condition_queries=[]
         )
 
+    def sibling_of_brother(self):
+        brother = self._targets(Relation.BROTHER)[0]
+        return TestCase(
+            test_query=Query(brother, Relation.SIBLING, [self.subject_id]),
+            condition_queries=[]
+        )
+
     def mothers_number_of_children(self):
         self.empty_conditions()
         mother = self._targets(Relation.MOTHER)[0]
@@ -121,6 +128,11 @@ def generate_constraints(subject_id: str, relation: Relation, new_target_id: str
         tests.append(constraints.aunt())
         tests.append(constraints.fathers_child())
         tests.append(constraints.fathers_number_of_children())
+
+    if relation == Relation.BROTHER:
+        constraints = RelationalConstraints(subject_id, {Relation.BROTHER: [new_target_id]})
+        # mother or father child
+        tests.append(constraints.sibling_of_brother())
 
     return tests
 
