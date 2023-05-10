@@ -73,12 +73,12 @@ if __name__ == '__main__':
 
     f = Fact('Q76', Relation.FATHER, 'Q12379')  # Barack Obama's father is Mario
     f_prev = Fact('Q76', Relation.FATHER, 'Q649593')  # Barack Obama's father is Barack Obama Sr.
-    e = CounterFactualExample(f, f_prev)
-    # e = RecentlyAddedExample(f)
+    # e = CounterFactualExample(f, f_prev)
+    e = RecentlyAddedExample(f)
     tq = Query('Q76', Relation.UNCLE, ['Q210593'])  # Barack Obama's uncle is Luigi
     cq = Query('Q12379', Relation.BROTHER, ['Q210593'])  # Mario's brother is Luigi
     tc = TestCase(tq, [cq])
-    tr = TestRunner(GPT2QueryExecutor(model_size='medium', device='cpu'), ROMEModelEditor('gpt2-medium'))
+    tr = TestRunner(GPT2QueryExecutor(model_size='medium'), ROMEModelEditor('gpt2-medium'))
     res = tr.run_testcases(e, [tc])
     print('------')
     print(f)
