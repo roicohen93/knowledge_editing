@@ -45,7 +45,6 @@ def subject_aliasing_axis(subject_id: str, relation: Relation, target_id: str):
 
 def two_hop_axis(subject_id: str, relation: Relation, target_id: str):
     tests = []
-    print(target_id)
     if not target_id or target_id[0] != 'Q':
         return tests
     target_relations = ent_to_relation_ids(target_id)
@@ -55,12 +54,22 @@ def two_hop_axis(subject_id: str, relation: Relation, target_id: str):
             continue
         second_hop_targets = subject_relation_to_targets(target_id, second_relation_enum)
         for second_hop_target in second_hop_targets:
-            phrase = relation_couple_to_phrase(relation, second_relation_enum)
+            phrase = relation_couple_to_phrase(relation, second_relation_enum).replace('<subject>', get_label(subject_id))
             if phrase is None:
                 continue
             test_query = TwoHopQuery(subject_id, relation, target_id, second_relation_enum, second_hop_target, phrase)
             condition_queries = [Query(target_id, second_relation_enum, second_hop_target)]
             tests.append(TestCase(test_query=test_query, condition_queries=condition_queries))
+    return tests
+
+
+def temporal_axis(subject_id: str, relation: Relation, previous_target_id: str):
+    tests = []
+    if relation.is_modification():
+        return tests
+    test_query = Query(subject_id, relation, previous_target_id)
+    condition_queries = [test_query]
+    tests.append(TestCase(test_query=test_query, condition_queries=condition_queries))
     return tests
 
 

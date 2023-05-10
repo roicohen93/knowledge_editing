@@ -3,7 +3,12 @@ import random
 from wikidata.utils import get_label, load_json, ent_label2id
 from wikidata.relations import our_relations
 from wikidata.recently_modified_facts import recently_modified_facts_given_relation
-from build_benchmark_tests import making_up_axis, logical_constraints_axis, subject_aliasing_axis, two_hop_axis
+from build_benchmark_tests import \
+    making_up_axis, \
+    logical_constraints_axis, \
+    subject_aliasing_axis, \
+    two_hop_axis, \
+    temporal_axis
 from relation import Relation
 from fact import Fact
 from benchmark import CounterFactualExample, RecentlyAddedExample, Dataset
@@ -39,14 +44,14 @@ def construct_recently_modified_benchmark(size: int = None):
         relation_enum = Relation.id_to_enum(relation_id)
         if relation_enum is None:
             continue
-        dataset_list.append(build_dataset_example(subject_id, relation_enum, target_id))
+        dataset_list.append(build_recently_modified_dataset_example(subject_id, relation_enum, target_id))
         i += 1
         if i % 10 == 0:
             print(f'Built {i}/{len(current_data)}')
     return Dataset(dataset_list)
 
 
-def build_dataset_example(subject_id: str, relation: Relation, target_id: str):
+def build_recently_modified_dataset_example(subject_id: str, relation: Relation, target_id: str):
     fact = Fact(subject_id, relation, target_id)
     making_up_tests = making_up_axis(subject_id, relation)
     logical_constraints = logical_constraints_axis(subject_id, relation, target_id)
@@ -58,6 +63,30 @@ def build_dataset_example(subject_id: str, relation: Relation, target_id: str):
         logical_constraints=logical_constraints,
         subject_paraphrasing_tests=subject_aliasing_tests,
         two_hop_tests=two_hop_tests
+    )
+    return curr_example
+
+
+def construct_fake_edits_benchmark(size: int = None):
+    pass
+
+
+def build_fake_dataset_example(subject_id: str, relation: Relation, target_id: str, previous_target_id: str):
+    fact = Fact(subject_id, relation, target_id)
+    previous_fact = Fact(subject_id, relation, previous_target_id)
+    making_up_tests = making_up_axis(subject_id, relation)
+    logical_constraints = logical_constraints_axis(subject_id, relation, target_id)
+    subject_aliasing_tests = subject_aliasing_axis(subject_id, relation, target_id)
+    two_hop_tests = two_hop_axis(subject_id, relation, target_id)
+    temporal_tests = temporal_axis(subject_id, relation, previous_target_id)
+    curr_example = CounterFactualExample(
+        fact=fact,
+        previous_fact=previous_fact,
+        making_up_tests=making_up_tests,
+        logical_constraints=logical_constraints,
+        subject_paraphrasing_tests=subject_aliasing_tests,
+        two_hop_tests=two_hop_tests,
+        prev_storage_tests=temporal_tests,
     )
     return curr_example
 
