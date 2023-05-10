@@ -3,13 +3,16 @@ from wikidata.utils import get_label, get_aliases
 
 class Query:
 
-    def __init__(self, subject_id, relation, target_ids):
+    def __init__(self, subject_id, relation, target_ids, phrase=None):
         self._subject_id = subject_id
         self._relation = relation
         self._targets_ids = target_ids if type(target_ids) == list else [target_ids]
+        self._phrase = phrase
 
     def get_query_prompt(self):
-        return self._relation.phrase(get_label(self._subject_id))
+        if self._phrase is None:
+            return self._relation.phrase(get_label(self._subject_id))
+        return self._phrase
 
     def get_answers(self):
         answers = []

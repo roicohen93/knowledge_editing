@@ -1,7 +1,7 @@
 from wikidata.relations import our_relations, relation2impacted_relations, relation2phrase
 from wikidata.utils import subject_relation_to_targets, get_label, get_aliases, get_description
 from build_logical_constraints import generate_constraints
-from utils import create_test_example_given_input_targets
+from utils import create_test_example_given_input_targets, get_aliases
 from relation import Relation
 from query import Query
 from testcase import TestCase
@@ -27,15 +27,19 @@ def making_up_axis(subject_id: str, relation: Relation):
     return tests
 
 
-def logical_constraints_axis(subject_id, relation, target_id):
+def logical_constraints_axis(subject_id: str, relation: Relation, target_id: str):
     return generate_constraints(subject_id, relation, target_id)
 
 
-def subject_aliasing_axis(subject_id, relation, target_id):
+def subject_aliasing_axis(subject_id: str, relation: Relation, target_id: str):
     tests = []
-    subject_description = get_description(subject_id)
-    phrase = relation2phrase[relation].replace('<subject>', subject_description)
-    tests.append(create_test_example_given_input_targets(phrase, [target_id]))
+    subject_aliases = get_aliases(subject_id)
+    for alias in subject_aliases:
+        phrase = relation.phrase().replace('<subject>', alias)
+        test_query = Query(subject_id, relation, target_id, phrase)
+        condition_queries = [test_query]
+        tests.append(TestCase(test_query=test_query, condition_queries=condition_queries))
+        tests.append(create_test_example_given_input_targets(phrase, [target_id]))
     return tests
     
 
