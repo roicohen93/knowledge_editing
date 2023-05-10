@@ -1,4 +1,6 @@
 from enum import Enum, auto
+
+from benchmark import RecentlyAddedExample, CounterFactualExample
 from modeleditor import InContextModelEditor
 
 
@@ -14,19 +16,28 @@ class TestRunner:
         self._query_executor = query_executor
         self._model_editor = model_editor
 
-    def run_testcases(self, fact, test_cases):
+    def run_testcases(self, example, test_cases):
+
+        # Check if fact is known/unknown according to example type
+        if isinstance(example, RecentlyAddedExample):
+            if self._query_executor.execute_query(example.fact.get_fact_query()):
+                return False, {}
+        elif isinstance(example, CounterFactualExample):
+            if not self._query_executor.execute_query(example.previous_fact.get_fact_query()):
+                return False, {}
+
         # Modify model
         modified_query_executor = self._query_executor.copy()
         if isinstance(self._model_editor, InContextModelEditor):
-            modified_query_executor = self._model_editor.edit_model(fact)
+            modified_query_executor = self._model_editor.edit_model(example.fact)
         else:
             edited_model = self._model_editor.edit_model(modified_query_executor.get_model(),
                                                          modified_query_executor.get_tokenizer(),
-                                                         fact)
+                                                         example.fact)
             modified_query_executor.set_model(edited_model)
 
         # Test edit
-        if not modified_query_executor.execute_query(fact.get_fact_query()):
+        if not modified_query_executor.execute_query(example.fact.get_fact_query()):
             return False, {}
 
         # Run tests
@@ -61,11 +72,14 @@ if __name__ == '__main__':
     from testcase import TestCase
 
     f = Fact('Q76', Relation.FATHER, 'Q12379')  # Barack Obama's father is Mario
+    f_prev = Fact('Q76', Relation.FATHER, 'Q649593')  # Barack Obama's father is Barack Obama Sr.
+    e = CounterFactualExample(f, f_prev)
+    # e = RecentlyAddedExample(f)
     tq = Query('Q76', Relation.UNCLE, ['Q210593'])  # Barack Obama's uncle is Luigi
     cq = Query('Q12379', Relation.BROTHER, ['Q210593'])  # Mario's brother is Luigi
     tc = TestCase(tq, [cq])
     tr = TestRunner(GPT2QueryExecutor(model_size='medium', device='cpu'), ROMEModelEditor('gpt2-medium'))
-    res = tr.run_testcases(f, [tc])
+    res = tr.run_testcases(e, [tc])
     print('------')
     print(f)
     print(tc)
