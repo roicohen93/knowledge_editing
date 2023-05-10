@@ -4,9 +4,10 @@ from benchmark import Dataset, Example, TestsAxis
 from fact import Fact
 from collections import defaultdict
 from build_benchmark import construct_recently_modified_benchmark
-from queryexecutor import GPT2QueryExecutor, GPT3QueryExecutor
+from queryexecutor import GPT2QueryExecutor, GPT3QueryExecutor, GPTJQueryExecutor
 from modeleditor import ROMEModelEditor, InContextNaiveModelEditor
 from wikidata.utils import write_json, add_to_json
+from testrunner import ExampleResult
 
 
 class Evaluator:
@@ -55,13 +56,14 @@ class Evaluator:
 if __name__ == '__main__':
     davinvi_query_executor = GPT3QueryExecutor(model_size='text-davinci-003')
     gpt2_query_executor = GPT2QueryExecutor('medium')
+    gptj_query_executor = GPTJQueryExecutor()
     rome_editor = ROMEModelEditor('gpt2-medium')
     # evaluator = Evaluator(query_executor=davinvi_query_executor, model_editor=InContextNaiveModelEditor(davinvi_query_executor))
-    evaluator = Evaluator(query_executor=gpt2_query_executor, model_editor=rome_editor)
+    evaluator = Evaluator(query_executor=gptj_query_executor, model_editor=rome_editor)
     recently_modified_facts = construct_recently_modified_benchmark(200)
 
     precisions_json = dict()
-    num_of_examples = 100
+    num_of_examples = 20
     succeeded_edits = 0
     average_precision = 0
     average_executed = 0
