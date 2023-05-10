@@ -54,9 +54,10 @@ def two_hop_axis(subject_id: str, relation: Relation, target_id: str):
             continue
         second_hop_targets = subject_relation_to_targets(target_id, second_relation_enum)
         for second_hop_target in second_hop_targets:
-            phrase = relation_couple_to_phrase(relation, second_relation_enum).replace('<subject>', get_label(subject_id))
+            phrase = relation_couple_to_phrase(relation, second_relation_enum)
             if phrase is None:
                 continue
+            phrase = phrase.replace('<subject>', get_label(subject_id))
             test_query = TwoHopQuery(subject_id, relation, target_id, second_relation_enum, second_hop_target, phrase)
             condition_queries = [Query(target_id, second_relation_enum, second_hop_target)]
             tests.append(TestCase(test_query=test_query, condition_queries=condition_queries))
