@@ -1,4 +1,4 @@
-from testrunner import TestRunner, TestResult
+from testrunner import TestRunner, TestResult, ExampleResult
 from testcase import TestCase
 from benchmark import Dataset, Example, TestsAxis
 from fact import Fact
@@ -19,7 +19,7 @@ class Evaluator:
     def average_acc(self, example: Example, test_cases: list):
         run_res = self._test_runner.run_testcases(example, test_cases)
         fact_edit_succeeded, res_dict = run_res
-        if not fact_edit_succeeded or not len(test_cases):
+        if fact_edit_succeeded == ExampleResult.EDIT_FAILED or not len(test_cases):
             return -1
         didnt_execute = len(res_dict[TestResult.NOT_EXECUTED])
         successes = len(res_dict[TestResult.PASSED])

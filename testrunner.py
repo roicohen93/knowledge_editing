@@ -10,6 +10,13 @@ class TestResult(Enum):
     FAILED = auto()
 
 
+class ExampleResult(Enum):
+    EXECUTED = auto()
+    EDIT_FAILED = auto()
+    NEW_FACT_KNOWN = auto()
+    PREV_FACT_UNKNOWN = auto()
+
+
 class TestRunner:
 
     def __init__(self, query_executor, model_editor):
@@ -17,14 +24,15 @@ class TestRunner:
         self._model_editor = model_editor
 
     def run_testcases(self, example, test_cases):
+        example_result = ExampleResult.EXECUTED
 
         # Check if fact is known/unknown according to example type
         if isinstance(example, RecentlyAddedExample):
             if self._query_executor.execute_query(example.fact.get_fact_query()):
-                return False, {}
+                example_result = ExampleResult.NEW_FACT_KNOWN
         elif isinstance(example, CounterFactualExample):
             if not self._query_executor.execute_query(example.previous_fact.get_fact_query()):
-                return False, {}
+                example_result = ExampleResult.PREV_FACT_UNKNOWN
 
         # Modify model
         modified_query_executor = self._query_executor.copy()
@@ -38,29 +46,29 @@ class TestRunner:
 
         # Test edit
         if not modified_query_executor.execute_query(example.fact.get_fact_query()):
-            return False, {}
+            return ExampleResult.EDIT_FAILED, {}
 
         # Run tests
-        results = {TestResult.NOT_EXECUTED: [], TestResult.PASSED: [], TestResult.FAILED: []}
+        test_results = {TestResult.NOT_EXECUTED: [], TestResult.PASSED: [], TestResult.FAILED: []}
         for test_case in test_cases:
             # Check conditions
             for condition_query in test_case.get_condition_queries():
                 if not self._query_executor.execute_query(condition_query):
-                    results[TestResult.NOT_EXECUTED].append(test_case)
+                    test_results[TestResult.NOT_EXECUTED].append(test_case)
                     break
 
             # Test modified model
-            if test_case not in results[TestResult.NOT_EXECUTED]:
+            if test_case not in test_results[TestResult.NOT_EXECUTED]:
                 test_case_results = [modified_query_executor.execute_query(test_query)
                                      for test_query in test_case.get_test_queries()]
                 if test_case.get_test_condition() == TestCase.OR_TEST_CONDITION and True in test_case_results:
-                    results[TestResult.PASSED].append(test_case)
+                    test_results[TestResult.PASSED].append(test_case)
                 elif test_case.get_test_condition() == TestCase.AND_TEST_CONDITION and False not in test_case_results:
-                    results[TestResult.PASSED].append(test_case)
+                    test_results[TestResult.PASSED].append(test_case)
                 else:
-                    results[TestResult.FAILED].append(test_case)
+                    test_results[TestResult.FAILED].append(test_case)
 
-        return True, results
+        return example_result, test_results
 
 
 if __name__ == '__main__':
@@ -73,8 +81,8 @@ if __name__ == '__main__':
 
     f = Fact('Q76', Relation.FATHER, 'Q12379')  # Barack Obama's father is Mario
     f_prev = Fact('Q76', Relation.FATHER, 'Q649593')  # Barack Obama's father is Barack Obama Sr.
-    # e = CounterFactualExample(f, f_prev)
-    e = RecentlyAddedExample(f)
+    e = CounterFactualExample(f, f_prev)
+    # e = RecentlyAddedExample(f)
     tq = Query('Q76', Relation.UNCLE, ['Q210593'])  # Barack Obama's uncle is Luigi
     cq = Query('Q12379', Relation.BROTHER, ['Q210593'])  # Mario's brother is Luigi
     tc = TestCase(tq, [cq])
