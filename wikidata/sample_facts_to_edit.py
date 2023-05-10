@@ -184,7 +184,7 @@ if __name__ == '__main__':
     print('start filtering...')
     interesting_dividers = [0, 2, 5, 9, 15]
     new_groups_division = union_per_dividers(grouped_ents, interesting_dividers)
-    how_many_from_each = 2000
+    how_many_from_each = 5000
     filtered_group_ents = []
     for i, current_full_group in enumerate(new_groups_division):
         current_group = []

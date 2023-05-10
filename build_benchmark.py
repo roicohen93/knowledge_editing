@@ -3,7 +3,7 @@ import random
 from wikidata.utils import get_label, load_json, ent_label2id
 from wikidata.relations import our_relations
 from wikidata.recently_modified_facts import recently_modified_facts_given_relation
-from build_benchmark_tests import making_up_axis, logical_constraints_axis, subject_aliasing_axis
+from build_benchmark_tests import making_up_axis, logical_constraints_axis, subject_aliasing_axis, two_hop_axis
 from relation import Relation
 from fact import Fact
 from benchmark import CounterFactualExample, RecentlyAddedExample, Dataset
@@ -34,11 +34,15 @@ def construct_recently_modified_benchmark(size: int = None):
     if size is not None:
         current_data = random.sample(current_data, min(size, len(current_data)))
     dataset_list = []
+    i = 0
     for subject_id, relation_id, target_id in current_data:
         relation_enum = Relation.id_to_enum(relation_id)
         if relation_enum is None:
             continue
         dataset_list.append(build_dataset_example(subject_id, relation_enum, target_id))
+        i += 1
+        if i % 10 == 0:
+            print(f'Built {i}/{len(current_data)}')
     return Dataset(dataset_list)
 
 
@@ -46,10 +50,14 @@ def build_dataset_example(subject_id: str, relation: Relation, target_id: str):
     fact = Fact(subject_id, relation, target_id)
     making_up_tests = making_up_axis(subject_id, relation)
     logical_constraints = logical_constraints_axis(subject_id, relation, target_id)
+    subject_aliasing_tests = subject_aliasing_axis(subject_id, relation, target_id)
+    two_hop_tests = two_hop_axis(subject_id, relation, target_id)
     curr_example = RecentlyAddedExample(
         fact=fact,
         making_up_tests=making_up_tests,
         logical_constraints=logical_constraints,
+        subject_paraphrasing_tests=subject_aliasing_tests,
+        two_hop_tests=two_hop_tests
     )
     return curr_example
 
@@ -79,8 +87,8 @@ if __name__ == '__main__':
     # counterfactuals_dataset = construct_counterfactuaals_benchmark()
     # print(counterfactuals_dataset.sample(5)[0])
 
-    recently_modified_facts = construct_recently_modified_benchmark(20)
-    for example in recently_modified_facts.sample(20):
+    recently_modified_facts = construct_recently_modified_benchmark(5)
+    for example in recently_modified_facts.sample(5):
         print(example)
 
 
