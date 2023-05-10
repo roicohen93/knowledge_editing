@@ -103,4 +103,7 @@ def relation_couple_to_key(relation1: Relation, relation2: Relation):
 
 
 def relation_couple_to_phrase(relation1: Relation, relation2: Relation):
-    return relation_relation2phrase[relation_couple_to_key(relation1, relation2)]
+    key_for_dict = relation_couple_to_key(relation1, relation2)
+    if key_for_dict not in relation_relation2phrase:
+        return None
+    return relation_relation2phrase[key_for_dict]
