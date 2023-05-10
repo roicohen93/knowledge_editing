@@ -100,3 +100,7 @@ relation_relation2phrase = {
 
 def relation_couple_to_key(relation1: Relation, relation2: Relation):
     return f'{relation1.name}-{relation2.name}'
+
+
+def relation_couple_to_phrase(relation1: Relation, relation2: Relation):
+    return relation_relation2phrase[relation_couple_to_key(relation1, relation2)]
