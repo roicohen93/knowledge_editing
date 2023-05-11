@@ -184,11 +184,12 @@ if __name__ == '__main__':
     print('start filtering...')
     interesting_dividers = [0, 2, 5, 9, 15]
     new_groups_division = union_per_dividers(grouped_ents, interesting_dividers)
-    how_many_from_each = 5000
+    how_many_from_each = 10000
     filtered_group_ents = []
     for i, current_full_group in enumerate(new_groups_division):
         current_group = []
         print(f'start filtering group {i+1}. Its size is {len(current_full_group)}')
+        random.shuffle(current_full_group)
         for entity in current_full_group:
             if is_interesting_ent(entity):
                 current_group.append(entity)
@@ -198,7 +199,7 @@ if __name__ == '__main__':
                 break
         filtered_group_ents.append(current_group)
         print(f'done with bucket {i+1}')
-    write_json(filtered_group_ents, f'../generations/sampled_entities_divided_to_buckets{how_many_from_each}_.json')
+    write_json(filtered_group_ents, f'../generations/sampled_entities_divided_to_buckets_{how_many_from_each}.json')
 
     facts = []
     for group in filtered_group_ents:
