@@ -98,7 +98,7 @@ def divide_ents_per_popularity(num_of_divisions: int):
     # ents_list, num_of_facts_list = ent_and_num_of_facts_lists_filtered()
     ents_list, num_of_facts_list = ent_and_num_of_facts_lists()
     size_of_each_division = len(ents_list) // num_of_divisions
-    sorted_idx = np.argsort(num_of_facts_list)
+    sorted_idx = np.argsort(-num_of_facts_list)
     idx_groups = []
     for i in range(1, num_of_divisions + 1):
         idx_groups.append(sorted_idx[(i-1) * size_of_each_division: i * size_of_each_division])
