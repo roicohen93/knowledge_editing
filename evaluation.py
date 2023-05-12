@@ -60,10 +60,10 @@ if __name__ == '__main__':
     rome_editor = ROMEModelEditor('gpt2-medium')
     # evaluator = Evaluator(query_executor=davinvi_query_executor, model_editor=InContextNaiveModelEditor(davinvi_query_executor))
     evaluator = Evaluator(query_executor=gptj_query_executor, model_editor=rome_editor)
-    recently_modified_facts = construct_recently_modified_benchmark(1000)
+    recently_modified_facts = construct_recently_modified_benchmark(500)
 
     precisions_json = dict()
-    num_of_examples = 1000
+    num_of_examples = 500
     succeeded_edits = 0
     average_precision = 0
     average_executed = 0

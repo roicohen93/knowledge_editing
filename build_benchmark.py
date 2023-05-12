@@ -44,7 +44,10 @@ def construct_recently_modified_benchmark(size: int = None):
         relation_enum = Relation.id_to_enum(relation_id)
         if relation_enum is None:
             continue
-        dataset_list.append(build_recently_modified_dataset_example(subject_id, relation_enum, target_id))
+        try:
+            dataset_list.append(build_recently_modified_dataset_example(subject_id, relation_enum, target_id))
+        except:
+            continue
         i += 1
         if i % 10 == 0:
             print(f'Built {i}/{len(current_data)}')
@@ -116,9 +119,10 @@ if __name__ == '__main__':
     # counterfactuals_dataset = construct_counterfactuaals_benchmark()
     # print(counterfactuals_dataset.sample(5)[0])
 
-    recently_modified_facts = construct_recently_modified_benchmark(5)
+    recently_modified_facts = construct_recently_modified_benchmark()
     for example in recently_modified_facts.sample(5):
-        print(example)
+        if example.fact._relation == Relation.MOTHER or example.fact._relation == Relation.FATHER:
+            print(example)
 
 
 
