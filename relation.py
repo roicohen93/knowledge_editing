@@ -79,6 +79,9 @@ class Relation(Enum):
     def is_modification(self):
         return self._is_modification
 
+    def formal_name(self):
+        return self.name.lower().replace('_', ' ')
+
     @staticmethod
     def string_to_enum(relation_name: str):
         processed_relation_name = relation_name.replace(' ', '_')

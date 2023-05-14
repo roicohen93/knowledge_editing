@@ -1,6 +1,6 @@
 import json
 import random
-from wikidata.utils import get_label, load_json, ent_label2id
+from wikidata.utils import get_label, load_json, ent_label2id, subject_relation_to_targets, ent_to_relation_ids
 from wikidata.relations import our_relations
 from wikidata.recently_modified_facts import recently_modified_facts_given_relation
 from build_benchmark_tests import \
@@ -12,6 +12,7 @@ from build_benchmark_tests import \
 from relation import Relation
 from fact import Fact
 from benchmark import CounterFactualExample, RecentlyAddedExample, Dataset
+from queryexecutor import QueryExecutor
 
 
 def construct_counterfactuals_benchmark():
@@ -70,8 +71,19 @@ def build_recently_modified_dataset_example(subject_id: str, relation: Relation,
     return curr_example
 
 
-def construct_fake_edits_benchmark(size: int = None):
-    pass
+def construct_fake_edits_benchmark(facts:list):
+    dataset_list = []
+    for subject_id, relation, target_id in facts:
+        relation2optional_targets = load_json('./wikidata/relation2optional_targets.json')
+        relation_formal_name = relation.formal_name()
+        if relation_formal_name not in relation2optional_targets:
+            continue
+        optional_targets = relation2optional_targets[relation.formal_name()]
+        random_target_id = ent_label2id(random.sample(optional_targets, 1)[0])
+        if random_target_id is None:
+            continue
+        dataset_list.append(build_fake_dataset_example(subject_id, relation, target_id, random_target_id))
+    return Dataset(dataset_list)
 
 
 def build_fake_dataset_example(subject_id: str, relation: Relation, target_id: str, previous_target_id: str):
@@ -93,6 +105,36 @@ def build_fake_dataset_example(subject_id: str, relation: Relation, target_id: s
     )
     return curr_example
 
+
+def filter_facts_based_on_conditions_passed(facts: list, query_executor: QueryExecutor):
+    filtered_facts = []
+    for subject_id, relation_enum, target_id, prev_target_id in facts:
+        example = build_fake_dataset_example(subject_id, relation_enum, target_id, prev_target_id)
+
+
+def all_relevant_facts_given_list_of_subjects(subjects: list):
+    facts = []
+    for subject_id in subjects:
+        relevant_relation_ids = ent_to_relation_ids(subject_id)
+        for relation_id in relevant_relation_ids:
+            relation_enum = Relation.id_to_enum(relation_id)
+            if relation_enum is None:
+                continue
+            targets = subject_relation_to_targets(subject_id, relation_id)
+            for target_id in targets:
+                facts.append((subject_id, relation_enum, target_id))
+    return facts
+
+
+def construct_fake_dataset_based_on_top_views_file():
+    subjects_json = load_json('./wikidata/top_entities_by_views.json')
+    subject_ids = [subject['id'] for subject in subjects_json][:2]
+    print('extracting facts..')
+    all_relevant_facts = all_relevant_facts_given_list_of_subjects(subject_ids)
+    print('building dataset..')
+    dataset = construct_fake_edits_benchmark(all_relevant_facts)
+    return dataset
+        
 
 if __name__ == '__main__':
     # recent_week_mother_modified = recently_modified_facts_given_relation(
@@ -119,10 +161,17 @@ if __name__ == '__main__':
     # counterfactuals_dataset = construct_counterfactuaals_benchmark()
     # print(counterfactuals_dataset.sample(5)[0])
 
-    recently_modified_facts = construct_recently_modified_benchmark()
-    for example in recently_modified_facts.sample(5):
-        if example.fact._relation == Relation.MOTHER or example.fact._relation == Relation.FATHER:
-            print(example)
+    # recently_modified_facts = construct_recently_modified_benchmark()
+    # for example in recently_modified_facts.sample(5):
+    #     if example.fact._relation == Relation.MOTHER or example.fact._relation == Relation.FATHER:
+    #         print(example)
+    
+    subjects_json = load_json('./wikidata/top_entities_by_views.json')
+    subject_ids = [subject['id'] for subject in subjects_json][:5]
+    print('extracting facts..')
+    all_relevant_facts = all_relevant_facts_given_list_of_subjects(subject_ids)
+    print('building dataset..')
+    dataset = construct_fake_edits_benchmark(all_relevant_facts)
 
 
 
