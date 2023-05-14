@@ -46,7 +46,7 @@ class TestRunner:
 
         # Test edit
         if not modified_query_executor.execute_query(example.fact.get_fact_query()):
-            return ExampleResult.EDIT_FAILED, {}
+            example_result = ExampleResult.EDIT_FAILED
 
         # Run tests
         test_results = {TestResult.NOT_EXECUTED: [], TestResult.PASSED: [], TestResult.FAILED: []}
