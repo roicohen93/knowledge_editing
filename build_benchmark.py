@@ -166,12 +166,13 @@ if __name__ == '__main__':
     #     if example.fact._relation == Relation.MOTHER or example.fact._relation == Relation.FATHER:
     #         print(example)
     
-    subjects_json = load_json('./wikidata/top_entities_by_views.json')
-    subject_ids = [subject['id'] for subject in subjects_json][:5]
-    print('extracting facts..')
-    all_relevant_facts = all_relevant_facts_given_list_of_subjects(subject_ids)
-    print('building dataset..')
-    dataset = construct_fake_edits_benchmark(all_relevant_facts)
+    # subjects_json = load_json('./wikidata/top_entities_by_views.json')
+    # subject_ids = [subject['id'] for subject in subjects_json][:5]
+    # print('extracting facts..')
+    # all_relevant_facts = all_relevant_facts_given_list_of_subjects(subject_ids)
+    # print('building dataset..')
+    # dataset = construct_fake_edits_benchmark(all_relevant_facts)
+    pass
 
 
 
