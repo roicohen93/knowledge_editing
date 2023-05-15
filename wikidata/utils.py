@@ -66,13 +66,18 @@ def facts_list_to_relation2targets(facts: list):
 
 
 def wikidata_item_given_id(ent_id: str):
-    return WikidataItem(get_entity_dict_from_api(ent_id))
+    try:
+        return WikidataItem(get_entity_dict_from_api(ent_id))
+    except:
+        return None
 
 
 def get_label(ent_id: str):
     if ent_id[0] != 'Q':
         return ent_id
-    return wikidata_item_given_id(ent_id).get_label()
+    label = wikidata_item_given_id(ent_id).get_label()
+    if label is None:
+        return ent_id
 
 
 def get_aliases(ent_id: str):
