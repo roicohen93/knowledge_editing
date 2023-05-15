@@ -75,9 +75,14 @@ def wikidata_item_given_id(ent_id: str):
 def get_label(ent_id: str):
     if ent_id[0] != 'Q':
         return ent_id
-    label = wikidata_item_given_id(ent_id).get_label()
+    item = wikidata_item_given_id(ent_id)
+    if item is not None:
+        label = item.get_label()
+    else:
+        return ent_id
     if label is None:
         return ent_id
+    return label
 
 
 def get_aliases(ent_id: str):
