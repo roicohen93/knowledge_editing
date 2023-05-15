@@ -68,7 +68,7 @@ if __name__ == '__main__':
     # evaluator = Evaluator(query_executor=davinvi_query_executor, model_editor=InContextNaiveModelEditor(davinvi_query_executor))
     evaluator = Evaluator(query_executor=gptj_query_executor, model_editor=rome_editor)
     recently_modified_facts = construct_recently_modified_benchmark(200)
-    fake_facts = construct_fake_dataset_based_on_top_views_file()
+    fake_facts = construct_fake_dataset_based_on_top_views_file(100)
 
     precisions_json = dict()
     num_of_examples = 1000

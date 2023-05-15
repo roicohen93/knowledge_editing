@@ -126,9 +126,11 @@ def all_relevant_facts_given_list_of_subjects(subjects: list):
     return facts
 
 
-def construct_fake_dataset_based_on_top_views_file():
+def construct_fake_dataset_based_on_top_views_file(limit: int = None):
     subjects_json = load_json('./wikidata/top_entities_by_views.json')
     subject_ids = [subject['id'] for subject in subjects_json]
+    if limit is not None:
+        subject_ids = subject_ids[:limit]
     print('extracting facts..')
     all_relevant_facts = all_relevant_facts_given_list_of_subjects(subject_ids)
     print('building dataset..')
