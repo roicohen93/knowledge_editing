@@ -86,11 +86,17 @@ def get_label(ent_id: str):
 
 
 def get_aliases(ent_id: str):
-    return wikidata_item_given_id(ent_id).get_aliases()
+    item = wikidata_item_given_id(ent_id)
+    if item is not None:
+        return item.get_aliases()
+    return [ent_id]
 
 
 def get_description(ent_id: str):
-    return wikidata_item_given_id(ent_id).get_description()
+    item = wikidata_item_given_id(ent_id)
+    if item is not None:
+        return item.get_description()
+    return [ent_id]
 
 
 def get_targets_given_item_and_relation(item: WikidataItem, relation_id: str):
