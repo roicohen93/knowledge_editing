@@ -1,5 +1,5 @@
 import torch
-from transformers import AutoTokenizer, GPT2LMHeadModel, GPTJForCausalLM, GPTNeoXForCausalLM, GPTNeoXTokenizerFast
+from transformers import AutoTokenizer, GPT2LMHeadModel, GPTJForCausalLM, GPTNeoXForCausalLM, GPTNeoXTokenizerFast, LlamaForCausalLM, LlamaTokenizer
 from copy import deepcopy
 from utils import call_openai, process_generation
 
@@ -44,7 +44,7 @@ class QueryExecutor:
         raise NotImplementedError()  # Override in concrete classes
 
 
-class HFGPTQueryExecutor(QueryExecutor):
+class HFQueryExecutor(QueryExecutor):
 
     def __init__(self, model=None, tokenizer=None, device=None):
         super().__init__(model, tokenizer, device)
@@ -58,7 +58,7 @@ class HFGPTQueryExecutor(QueryExecutor):
         return self._tokenizer.decode(outputs[0], skip_special_tokens=True)
 
 
-class GPT2QueryExecutor(HFGPTQueryExecutor):
+class GPT2QueryExecutor(HFQueryExecutor):
 
     def __init__(self, model_size='xl', device=None, model=None, tokenizer=None):
         self._model_size = model_size
@@ -73,7 +73,7 @@ class GPT2QueryExecutor(HFGPTQueryExecutor):
         return GPT2QueryExecutor(self._model_size, self._device, deepcopy(self._model), deepcopy(self._tokenizer))
 
 
-class GPTJQueryExecutor(HFGPTQueryExecutor):
+class GPTJQueryExecutor(HFQueryExecutor):
 
     def __init__(self, device=None, model=None, tokenizer=None):
         if tokenizer is None:
@@ -87,7 +87,7 @@ class GPTJQueryExecutor(HFGPTQueryExecutor):
         return GPTJQueryExecutor(self._device, deepcopy(self._model), deepcopy(self._tokenizer))
 
 
-class GPTNeoXQueryExecutor(HFGPTQueryExecutor):
+class GPTNeoXQueryExecutor(HFQueryExecutor):
 
     def __init__(self, device=None, model=None, tokenizer=None):
         if tokenizer is None:
@@ -99,6 +99,21 @@ class GPTNeoXQueryExecutor(HFGPTQueryExecutor):
 
     def copy(self):
         return GPTNeoXQueryExecutor(self._device, deepcopy(self._model), deepcopy(self._tokenizer))
+
+
+class LlamaQueryExecutor(HFQueryExecutor):
+
+    def __init__(self, model_size='7b', device=None, model=None, tokenizer=None):
+        self._model_size = model_size
+        if tokenizer is None:
+            tokenizer = LlamaTokenizer.from_pretrained(f'decapoda-research/llama-{self._model_size}-hf')
+            tokenizer.pad_token = tokenizer.eos_token
+        if model is None:
+            model = LlamaForCausalLM.from_pretrained(f'decapoda-research/llama-{self._model_size}-hf', pad_token_id=tokenizer.eos_token_id)
+        super().__init__(model, tokenizer, device)
+
+    def copy(self):
+        return LlamaQueryExecutor(self._model_size, self._device, deepcopy(self._model), deepcopy(self._tokenizer))
 
 
 class GPT3QueryExecutor(QueryExecutor):
