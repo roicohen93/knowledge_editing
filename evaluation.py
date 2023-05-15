@@ -4,7 +4,7 @@ from benchmark import Dataset, Example, TestsAxis
 from fact import Fact
 from collections import defaultdict
 from build_benchmark import construct_recently_modified_benchmark, construct_fake_dataset_based_on_top_views_file
-from queryexecutor import GPT2QueryExecutor, GPT3QueryExecutor, GPTJQueryExecutor, GPTNeoXQueryExecutor
+from queryexecutor import GPT2QueryExecutor, GPT3QueryExecutor, GPTJQueryExecutor, GPTNeoXQueryExecutor, LlamaQueryExecutor
 from modeleditor import ROMEModelEditor, InContextNaiveModelEditor
 from wikidata.utils import write_json, add_to_json
 from testrunner import ExampleResult
@@ -65,6 +65,7 @@ if __name__ == '__main__':
     gpt2_query_executor = GPT2QueryExecutor('medium')
     gptj_query_executor = GPTJQueryExecutor()
     gpt_neo_executor = GPTNeoXQueryExecutor()
+    llama_executor = LlamaQueryExecutor()
     rome_editor = ROMEModelEditor('gpt2-medium')
     # evaluator = Evaluator(query_executor=davinvi_query_executor, model_editor=InContextNaiveModelEditor(davinvi_query_executor))
     evaluator = Evaluator(query_executor=gpt_neo_executor, model_editor=rome_editor)
