@@ -72,8 +72,8 @@ if __name__ == '__main__':
     rome_editor = ROMEModelEditor('gpt2-medium')
     # evaluator = Evaluator(query_executor=davinvi_query_executor, model_editor=InContextNaiveModelEditor(davinvi_query_executor))
     evaluator = Evaluator(query_executor=gptj_query_executor, model_editor=rome_editor)
-    recently_modified_facts = construct_recently_modified_benchmark(200)
-    # fake_facts = construct_fake_dataset_based_on_top_views_file(10)
+    # recently_modified_facts = construct_recently_modified_benchmark(200)
+    fake_facts = construct_fake_dataset_based_on_top_views_file(100)
 
     precisions_json = dict()
     num_of_examples = 200
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     average_size = 0
     total_checked_examples = 0
     executed_portion_dict = defaultdict(lambda: 0)
-    for i, example in enumerate(recently_modified_facts.sample(num_of_examples)):
+    for i, example in enumerate(fake_facts.sample(num_of_examples)):
         if i % 5 == 0:
             print(f'{i+1}/{num_of_examples}')
 
