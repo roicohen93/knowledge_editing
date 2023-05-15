@@ -2,6 +2,7 @@ from enum import Enum, auto
 
 from benchmark import RecentlyAddedExample, CounterFactualExample
 from modeleditor import InContextModelEditor
+from testcase import TestCase
 
 
 class TestResult(Enum):

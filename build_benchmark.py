@@ -174,6 +174,8 @@ if __name__ == '__main__':
     # all_relevant_facts = all_relevant_facts_given_list_of_subjects(subject_ids)
     # print('building dataset..')
     # dataset = construct_fake_edits_benchmark(all_relevant_facts)
+    # for example in dataset.sample(5):
+    #     print(example)
     pass
 
 
