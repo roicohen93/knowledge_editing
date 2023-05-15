@@ -1,10 +1,11 @@
 from wikidata.relations import our_relations, relation2impacted_relations, relation2phrase
-from wikidata.utils import subject_relation_to_targets, get_label, get_aliases, get_description
+from wikidata.utils import subject_relation_to_targets, ent_to_relation_ids, get_label, get_aliases, get_description
 from build_logical_constraints import generate_constraints
 from utils import create_test_example_given_input_targets
 from relation import Relation
-from query import Query
+from query import Query, TwoHopQuery
 from testcase import TestCase
+from two_hop_phrases import relation_couple_to_phrase
 
 
 def making_up_axis(subject_id: str, relation: Relation):
@@ -17,7 +18,7 @@ def making_up_axis(subject_id: str, relation: Relation):
     for other_relation in Relation:
         if other_relation == relation or other_relation in impacted_relations:
             continue
-        corresponding_targets = subject_relation_to_targets(subject_id, our_relations[other_relation])
+        corresponding_targets = subject_relation_to_targets(subject_id, other_relation)
         if not corresponding_targets:
             continue
         test_query = Query(subject_id, other_relation, corresponding_targets)
@@ -27,17 +28,51 @@ def making_up_axis(subject_id: str, relation: Relation):
     return tests
 
 
-def logical_constraints_axis(subject_id, relation, target_id):
+def logical_constraints_axis(subject_id: str, relation: Relation, target_id: str):
     return generate_constraints(subject_id, relation, target_id)
 
 
-def subject_aliasing_axis(subject_id, relation, target_id):
+def subject_aliasing_axis(subject_id: str, relation: Relation, target_id: str):
     tests = []
-    subject_description = get_description(subject_id)
-    phrase = relation2phrase[relation].replace('<subject>', subject_description)
-    tests.append(create_test_example_given_input_targets(phrase, [target_id]))
+    subject_aliases = get_aliases(subject_id)
+    for alias in subject_aliases:
+        phrase = relation.phrase(alias)
+        test_query = Query(subject_id, relation, target_id, phrase)
+        condition_queries = [test_query]
+        tests.append(TestCase(test_query=test_query, condition_queries=condition_queries))
     return tests
-    
+
+
+def two_hop_axis(subject_id: str, relation: Relation, target_id: str):
+    tests = []
+    if not target_id or target_id[0] != 'Q':
+        return tests
+    target_relations = ent_to_relation_ids(target_id)
+    for relation_id in target_relations:
+        second_relation_enum = Relation.id_to_enum(relation_id)
+        if second_relation_enum is None:
+            continue
+        second_hop_targets = subject_relation_to_targets(target_id, second_relation_enum)
+        for second_hop_target in second_hop_targets:
+            phrase = relation_couple_to_phrase(relation, second_relation_enum)
+            if phrase is None:
+                continue
+            phrase = phrase.replace('<subject>', get_label(subject_id))
+            test_query = TwoHopQuery(subject_id, relation, target_id, second_relation_enum, second_hop_target, phrase)
+            condition_queries = [Query(target_id, second_relation_enum, second_hop_target)]
+            tests.append(TestCase(test_query=test_query, condition_queries=condition_queries))
+    return tests
+
+
+def temporal_axis(subject_id: str, relation: Relation, previous_target_id: str):
+    tests = []
+    if relation.is_modification():
+        return tests
+    test_query = Query(subject_id, relation, previous_target_id)
+    condition_queries = [test_query]
+    tests.append(TestCase(test_query=test_query, condition_queries=condition_queries))
+    return tests
+
 
 # for test in subject_aliasing_axis('Q42', 'occupation', 'Q36834'):
 #     print(test)

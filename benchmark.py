@@ -29,12 +29,28 @@ class Example:
         self.prev_storage_tests = prev_storage_tests
 
     def __str__(self):
-        res = f'Fact: ({self.fact.get_subject_label()}, {self.fact.get_relation_label()}, {self.fact.get_target_label()})\n'
-        res += f'Making Up tests: {self.making_up_tests}\n'
-        res += f'Logical Constraints: {self.logical_constraints}\n'
-        res += f'Subject Paraphrasing tests: {self.subject_paraphrasing_tests}\n'
-        res += f'Two-Hop tests: {self.two_hop_tests}\n'
-        res += f'Previous Storage tests: {self.prev_storage_tests}\n'
+        res = f'Fact: {str(self.fact)}\n'
+        res += f'Making Up tests:\n'
+        res += self.str_list_of_tests(self.making_up_tests)
+        res += '\n'
+        res += f'Logical Constraints:\n'
+        res += self.str_list_of_tests(self.logical_constraints)
+        res += '\n'
+        res += f'Subject Paraphrasing tests:\n'
+        res += self.str_list_of_tests(self.subject_paraphrasing_tests)
+        res += '\n'
+        res += f'Two-Hop tests:\n'
+        res += self.str_list_of_tests(self.two_hop_tests)
+        res += '\n'
+        res += f'Previous Storage tests:'
+        res += self.str_list_of_tests(self.prev_storage_tests)
+        return res
+    
+    @staticmethod
+    def str_list_of_tests(tests: list):
+        res = ''
+        for test in tests:
+            res += f'{str(test)}\n'
         return res
 
 

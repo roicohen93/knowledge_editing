@@ -19,7 +19,6 @@ class RelationalConstraints:
         return self.edits[relation] if relation in self.edits else subject_relation_to_targets(
             self.subject_id, relation)
 
-    @staticmethod
     def _targets_of(self, subject_ids: list, relation: Relation):
         targets = []
         for subject_id in subject_ids:
@@ -55,10 +54,17 @@ class RelationalConstraints:
             condition_queries=[]
         )
 
+    def sibling_of_brother(self):
+        brother = self._targets(Relation.BROTHER)[0]
+        return TestCase(
+            test_query=Query(brother, Relation.SIBLING, [self.subject_id]),
+            condition_queries=[]
+        )
+
     def mothers_number_of_children(self):
         self.empty_conditions()
         mother = self._targets(Relation.MOTHER)[0]
-        num_children = self._targets_of([mother], Relation.NUMBER_OF_CHILDREN)[0]
+        num_children = len(self._targets_of([mother], Relation.CHILD))
         return TestCase(
             test_query=Query(mother, Relation.NUMBER_OF_CHILDREN, num_children + 1),
             condition_queries=self.conditions
@@ -66,8 +72,8 @@ class RelationalConstraints:
 
     def fathers_number_of_children(self):
         self.empty_conditions()
-        father = self._targets(Relation.MOTHER)[0]
-        num_children = self._targets_of([father], Relation.NUMBER_OF_CHILDREN)[0]
+        father = self._targets(Relation.FATHER)[0]
+        num_children = len(self._targets_of([father], Relation.CHILD))
         return TestCase(
             test_query=Query(father, Relation.NUMBER_OF_CHILDREN, num_children + 1),
             condition_queries=self.conditions
@@ -122,6 +128,11 @@ def generate_constraints(subject_id: str, relation: Relation, new_target_id: str
         tests.append(constraints.aunt())
         tests.append(constraints.fathers_child())
         tests.append(constraints.fathers_number_of_children())
+
+    if relation == Relation.BROTHER:
+        constraints = RelationalConstraints(subject_id, {Relation.BROTHER: [new_target_id]})
+        # mother or father child
+        tests.append(constraints.sibling_of_brother())
 
     return tests
 

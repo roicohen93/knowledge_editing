@@ -1,5 +1,6 @@
 import sys
 import os
+from queryexecutor import QueryExecutor
 
 
 class ModelEditor:
@@ -16,6 +17,29 @@ class ModelEditor:
 
     def edit_model(self, model, tokenizer, fact):
         raise NotImplementedError()  # Override in concrete classes
+
+
+class InContextModelEditor(ModelEditor):
+
+    def __init__(self, query_executor: QueryExecutor):
+        super().__init__()
+        self.query_executor = query_executor
+
+    def edit_model(self, fact):
+        raise NotImplementedError()  # Override in concrete classes
+
+
+class InContextNaiveModelEditor(InContextModelEditor):
+
+    def __init__(self, query_executor: QueryExecutor):
+        super().__init__(query_executor)
+
+    def edit_model(self, fact):
+        editing_prompt = fact.get_fact_phrased()
+        edited_executor = self.query_executor.copy()
+        edited_executor.add_to_editing_prompt(f'{editing_prompt}\n')
+        print(edited_executor.editing_prompt)
+        return edited_executor
 
 
 class MEMITModelEditor(ModelEditor):
@@ -45,7 +69,7 @@ class ROMEModelEditor(ModelEditor):
 
     def edit_model(self, model, tokenizer, fact):
         # TODO: Fixup imports
-        os.chdir('./rome')
+        os.chdir('./memit')
         sys.path.append('.')
         from rome import ROMEHyperParams, apply_rome_to_model
 
