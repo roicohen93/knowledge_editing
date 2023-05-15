@@ -4,7 +4,7 @@ from benchmark import Dataset, Example, TestsAxis
 from fact import Fact
 from collections import defaultdict
 from build_benchmark import construct_recently_modified_benchmark, construct_fake_dataset_based_on_top_views_file
-from queryexecutor import GPT2QueryExecutor, GPT3QueryExecutor, GPTJQueryExecutor
+from queryexecutor import GPT2QueryExecutor, GPT3QueryExecutor, GPTJQueryExecutor, GPTNeoXQueryExecutor
 from modeleditor import ROMEModelEditor, InContextNaiveModelEditor
 from wikidata.utils import write_json, add_to_json
 from testrunner import ExampleResult
@@ -64,20 +64,21 @@ if __name__ == '__main__':
     davinvi_query_executor = GPT3QueryExecutor(model_size='text-davinci-003')
     gpt2_query_executor = GPT2QueryExecutor('medium')
     gptj_query_executor = GPTJQueryExecutor()
+    gpt_neo_executor = GPTNeoXQueryExecutor()
     rome_editor = ROMEModelEditor('gpt2-medium')
     # evaluator = Evaluator(query_executor=davinvi_query_executor, model_editor=InContextNaiveModelEditor(davinvi_query_executor))
-    evaluator = Evaluator(query_executor=gptj_query_executor, model_editor=rome_editor)
+    evaluator = Evaluator(query_executor=gpt_neo_executor, model_editor=rome_editor)
     recently_modified_facts = construct_recently_modified_benchmark(200)
     fake_facts = construct_fake_dataset_based_on_top_views_file(100)
 
     precisions_json = dict()
-    num_of_examples = 1000
+    num_of_examples = 500
     succeeded_edits = 0
     average_precision = 0
     average_executed = 0
     average_size = 0
     total_checked_examples = 0
-    for i, example in enumerate(fake_facts.sample(num_of_examples)):
+    for i, example in enumerate(recently_modified_facts.sample(num_of_examples)):
         if i % 5 == 0:
             print(f'{i+1}/{num_of_examples}')
         try:
