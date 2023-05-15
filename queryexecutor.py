@@ -66,7 +66,7 @@ class GPT2QueryExecutor(HFQueryExecutor):
             tokenizer = AutoTokenizer.from_pretrained(f'gpt2-{self._model_size}')
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
-            model = GPT2LMHeadModel.from_pretrained(f'gpt2-{self._model_size}', pad_token_id=tokenizer.eos_token_id, low_cpu_mem_usage=True)
+            model = GPT2LMHeadModel.from_pretrained(f'gpt2-{self._model_size}', device_map="auto", offload_folder="offload", offload_state_dict=True, pad_token_id=tokenizer.eos_token_id)
         super().__init__(model, tokenizer, device)
 
     def copy(self):
@@ -80,7 +80,7 @@ class GPTJQueryExecutor(HFQueryExecutor):
             tokenizer = AutoTokenizer.from_pretrained('EleutherAI/gpt-j-6B')
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
-            model = GPTJForCausalLM.from_pretrained('EleutherAI/gpt-j-6B', pad_token_id=tokenizer.eos_token_id)
+            model = GPTJForCausalLM.from_pretrained('EleutherAI/gpt-j-6B', device_map="auto", offload_folder="offload", offload_state_dict=True, revision="float16", torch_dtype=torch.float16, pad_token_id=tokenizer.eos_token_id)
         super().__init__(model, tokenizer, device)
 
     def copy(self):
