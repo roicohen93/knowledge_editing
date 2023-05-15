@@ -1,5 +1,5 @@
 import torch
-from transformers import GPT2LMHeadModel, GPTJForCausalLM, AutoTokenizer
+from transformers import AutoTokenizer, GPT2LMHeadModel, GPTJForCausalLM, GPTNeoXForCausalLM, GPTNeoXTokenizerFast
 from copy import deepcopy
 from utils import call_openai, process_generation
 
@@ -85,6 +85,20 @@ class GPTJQueryExecutor(HFGPTQueryExecutor):
 
     def copy(self):
         return GPTJQueryExecutor(self._device, deepcopy(self._model), deepcopy(self._tokenizer))
+
+
+class GPTNeoXQueryExecutor(HFGPTQueryExecutor):
+
+    def __init__(self, device=None, model=None, tokenizer=None):
+        if tokenizer is None:
+            tokenizer = GPTNeoXTokenizerFast.from_pretrained('EleutherAI/gpt-neox-20b')
+            tokenizer.pad_token = tokenizer.eos_token
+        if model is None:
+            model = GPTNeoXForCausalLM.from_pretrained('EleutherAI/gpt-neox-20b', pad_token_id=tokenizer.eos_token_id)
+        super().__init__(model, tokenizer, device)
+
+    def copy(self):
+        return GPTNeoXQueryExecutor(self._device, deepcopy(self._model), deepcopy(self._tokenizer))
 
 
 class GPT3QueryExecutor(QueryExecutor):
