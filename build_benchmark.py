@@ -128,7 +128,9 @@ def all_relevant_facts_given_list_of_subjects(subjects: list):
 
 def sample_relevant_facts_given_list_of_subjects(subjects: list, number_of_facts_each: int):
     facts = []
-    for subject_id in subjects:
+    for i, subject_id in enumerate(subjects):
+        if (i+1) % 100 == 0:
+            print(f'{i+1}/{len(subjects)}')
         relevant_relation_ids = ent_to_relation_ids(subject_id)
         sampled_relations_ids = random.sample(relevant_relation_ids, min(number_of_facts_each, len(relation_enum)))
         for relation_id in sampled_relations_ids:
