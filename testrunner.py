@@ -72,7 +72,7 @@ class TestRunner:
 
 
 if __name__ == '__main__':
-    from queryexecutor import GPT2QueryExecutor, GPTJQueryExecutor
+    from queryexecutor import GPT2QueryExecutor, GPTNeoXQueryExecutor
     from modeleditor import MEMITModelEditor, ROMEModelEditor, MENDModelEditor
     from fact import Fact
     from relation import Relation
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     tq = Query('Q76', Relation.UNCLE, ['Q210593'])  # Barack Obama's uncle is Luigi
     cq = Query('Q12379', Relation.BROTHER, ['Q210593'])  # Mario's brother is Luigi
     tc = TestCase(tq, [cq])
-    tr = TestRunner(GPTJQueryExecutor(), ROMEModelEditor('EleutherAI_gpt-j-6B'))
+    tr = TestRunner(GPTNeoXQueryExecutor(), ROMEModelEditor('EleutherAI_gpt-neox-20b'))
     res = tr.run_testcases(e, [tc])
     print('------')
     print(f)
