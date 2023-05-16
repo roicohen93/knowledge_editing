@@ -64,19 +64,32 @@ class ConditionsEvaluator(Evaluator):
 
 
 if __name__ == '__main__':
+    model = 'gpt-j'
+
     davinvci_query_executor = GPT3QueryExecutor(model_size='text-davinci-003')
-    gpt2_query_executor = GPT2QueryExecutor('medium')
-    gptj_query_executor = GPTJQueryExecutor()
-    # gpt_neo_executor = GPTNeoXQueryExecutor()
-    # llama_executor = LlamaQueryExecutor()
-    rome_editor = ROMEModelEditor('gpt2-medium')
+    if model == 'gpt2-meduim':
+        query_executor = GPT2QueryExecutor('medium')
+        rome_editor = ROMEModelEditor('gpt2-medium')
+    if model == 'gpt2-large':
+        query_executor = GPT2QueryExecutor('large')
+        rome_editor = ROMEModelEditor('gpt2-large')
+    if model == 'gpt-j':
+        query_executor =GPTJQueryExecutor()
+        rome_editor = ROMEModelEditor('EleutherAI/gpt-j-6B')
+    if model == 'gpt-neo':
+        query_executor = GPTNeoXQueryExecutor()
+        rome_editor = ROMEModelEditor('EleutherAI_gpt-neox-20b')
+    if model == 'llama':
+        query_executor = LlamaQueryExecutor()
+        rome_editor = ROMEModelEditor('')
+
     # evaluator = Evaluator(query_executor=davinvi_query_executor, model_editor=InContextNaiveModelEditor(davinvi_query_executor))
-    evaluator = Evaluator(query_executor=gptj_query_executor, model_editor=rome_editor)
+    evaluator = Evaluator(query_executor=query_executor, model_editor=rome_editor)
     # recently_modified_facts = construct_recently_modified_benchmark(200)
-    fake_facts = construct_fake_dataset_based_on_top_views_file(100)
+    fake_facts = construct_fake_dataset_based_on_top_views_file(10)
 
     precisions_json = dict()
-    num_of_examples = 200
+    num_of_examples = 5
     succeeded_edits = 0
     average_precision = 0
     average_executed = 0
