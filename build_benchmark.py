@@ -126,13 +126,32 @@ def all_relevant_facts_given_list_of_subjects(subjects: list):
     return facts
 
 
-def construct_fake_dataset_based_on_top_views_file(limit: int = None):
-    subjects_json = load_json('./wikidata/top_entities_by_views.json')
+def sample_relevant_facts_given_list_of_subjects(subjects: list, number_of_facts_each: int):
+    facts = []
+    for subject_id in subjects:
+        relevant_relation_ids = ent_to_relation_ids(subject_id)
+        sampled_relations_ids = random.sample(relevant_relation_ids, min(number_of_facts_each, len(relation_enum)))
+        for relation_id in sampled_relations_ids:
+            relation_enum = Relation.id_to_enum(relation_id)
+            if relation_enum is None:
+                continue
+            targets = subject_relation_to_targets(subject_id, relation_id)
+            if targets:
+                random_target = random.sample(targets, 1)[0]
+                facts.append((subject_id, relation_enum, random_target))
+    return facts
+
+
+def construct_fake_dataset_based_on_top_views_file(limit: int = None, limit_num_of_facts: int = None):
+    subjects_json = load_json('./wikidata/top_entities_by_views_monthly.json')
     subject_ids = [subject['id'] for subject in subjects_json]
     if limit is not None:
-        subject_ids = subject_ids[:limit]
+        subject_ids = random.sample(subject_ids, min(limit, len(subject_ids)))
     print('extracting facts..')
-    all_relevant_facts = all_relevant_facts_given_list_of_subjects(subject_ids)
+    if limit_num_of_facts is None:
+        all_relevant_facts = all_relevant_facts_given_list_of_subjects(subject_ids)
+    else:
+        all_relevant_facts = sample_relevant_facts_given_list_of_subjects(subject_ids, limit_num_of_facts)
     print('building dataset..')
     dataset = construct_fake_edits_benchmark(all_relevant_facts)
     return dataset
@@ -176,7 +195,9 @@ if __name__ == '__main__':
     # dataset = construct_fake_edits_benchmark(all_relevant_facts)
     # for example in dataset.sample(5):
     #     print(example)
-    pass
+    top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=5000, limit_num_of_facts=3)
+    top_views_benchmark.to_file('./benchmark/top_views.json')
+
 
 
 
