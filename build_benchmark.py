@@ -147,7 +147,7 @@ def sample_relevant_facts_given_list_of_subjects(subjects: list, number_of_facts
 def construct_fake_dataset_based_on_top_views_file(limit: int = None, limit_num_of_facts: int = None):
     subjects_json = load_json('./wikidata/top_entities_by_views_monthly.json')
     subject_list = []
-    for month, subjects in subjects_json:
+    for month, subjects in subjects_json.items():
         subject_list.extend(subjects)
     subject_ids = [subject['id'] for subject in subject_list]
     if limit is not None:
