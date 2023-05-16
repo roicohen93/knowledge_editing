@@ -132,7 +132,7 @@ def sample_relevant_facts_given_list_of_subjects(subjects: list, number_of_facts
         if (i+1) % 100 == 0:
             print(f'{i+1}/{len(subjects)}')
         relevant_relation_ids = ent_to_relation_ids(subject_id)
-        sampled_relations_ids = random.sample(relevant_relation_ids, min(number_of_facts_each, len(relation_enum)))
+        sampled_relations_ids = random.sample(relevant_relation_ids, min(number_of_facts_each, len(relevant_relation_ids)))
         for relation_id in sampled_relations_ids:
             relation_enum = Relation.id_to_enum(relation_id)
             if relation_enum is None:
