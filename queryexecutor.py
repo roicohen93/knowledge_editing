@@ -25,6 +25,9 @@ class QueryExecutor:
     def get_tokenizer(self):
         return self._tokenizer
 
+    def get_model_name(self):
+        raise NotImplementedError()  # Override in concrete classes
+
     @staticmethod
     def _verify_answer(model_answer, correct_answer):
         for answer in correct_answer:
@@ -49,6 +52,9 @@ class HFQueryExecutor(QueryExecutor):
     def __init__(self, model=None, tokenizer=None, device=None):
         super().__init__(model, tokenizer, device)
 
+    def get_model_name(self):
+        raise NotImplementedError()  # Override in concrete classes
+
     def copy(self):
         raise NotImplementedError()  # Override in concrete classes
 
@@ -62,12 +68,16 @@ class GPT2QueryExecutor(HFQueryExecutor):
 
     def __init__(self, model_size='xl', device=None, model=None, tokenizer=None):
         self._model_size = model_size
+        self._model_name = f'gpt2-{self._model_size}'
         if tokenizer is None:
-            tokenizer = AutoTokenizer.from_pretrained(f'gpt2-{self._model_size}')
+            tokenizer = AutoTokenizer.from_pretrained(self._model_name)
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
-            model = GPT2LMHeadModel.from_pretrained(f'gpt2-{self._model_size}', pad_token_id=tokenizer.eos_token_id)
+            model = GPT2LMHeadModel.from_pretrained(self._model_name, pad_token_id=tokenizer.eos_token_id)
         super().__init__(model, tokenizer, device)
+
+    def get_model_name(self):
+        return self._model_name
 
     def copy(self):
         return GPT2QueryExecutor(self._model_size, self._device, deepcopy(self._model), deepcopy(self._tokenizer))
@@ -83,6 +93,9 @@ class GPTJQueryExecutor(HFQueryExecutor):
             model = GPTJForCausalLM.from_pretrained('EleutherAI/gpt-j-6B', pad_token_id=tokenizer.eos_token_id)
         super().__init__(model, tokenizer, device)
 
+    def get_model_name(self):
+        return 'EleutherAI_gpt-j-6B'
+
     def copy(self):
         return GPTJQueryExecutor(self._device, deepcopy(self._model), deepcopy(self._tokenizer))
 
@@ -97,6 +110,9 @@ class GPTNeoXQueryExecutor(HFQueryExecutor):
             model = GPTNeoXForCausalLM.from_pretrained('EleutherAI/gpt-neox-20b', device_map="auto", offload_folder="offload", offload_state_dict=True, pad_token_id=tokenizer.eos_token_id)
         super().__init__(model, tokenizer, device)
 
+    def get_model_name(self):
+        return 'EleutherAI_gpt-neox-20b'
+
     def copy(self):
         return GPTNeoXQueryExecutor(self._device, deepcopy(self._model), deepcopy(self._tokenizer))
 
@@ -105,12 +121,16 @@ class LlamaQueryExecutor(HFQueryExecutor):
 
     def __init__(self, model_size='7b', device=None, model=None, tokenizer=None):
         self._model_size = model_size
+        self._model_name = f'llama-{self._model_size}'
         if tokenizer is None:
-            tokenizer = LlamaTokenizer.from_pretrained(f'decapoda-research/llama-{self._model_size}-hf')
+            tokenizer = LlamaTokenizer.from_pretrained(f'decapoda-research/{self._model_name}-hf')
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
-            model = LlamaForCausalLM.from_pretrained(f'decapoda-research/llama-{self._model_size}-hf', device_map="auto", offload_folder="offload", offload_state_dict=True, pad_token_id=tokenizer.eos_token_id)
+            model = LlamaForCausalLM.from_pretrained(f'decapoda-research/{self._model_name}-hf', device_map="auto", offload_folder="offload", offload_state_dict=True, pad_token_id=tokenizer.eos_token_id)
         super().__init__(model, tokenizer, device)
+
+    def get_model_name(self):
+        return self._model_name
 
     def copy(self):
         return LlamaQueryExecutor(self._model_size, self._device, deepcopy(self._model), deepcopy(self._tokenizer))
@@ -122,6 +142,9 @@ class GPT3QueryExecutor(QueryExecutor):
         self._model_size = model_size
         self.editing_prompt = editing_prompt
         super().__init__()
+
+    def get_model_name(self):
+        return self._model_size
 
     def copy(self):
         return GPT3QueryExecutor(self._model_size, self.editing_prompt)

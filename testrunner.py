@@ -87,7 +87,9 @@ if __name__ == '__main__':
     tq = Query('Q76', Relation.UNCLE, ['Q210593'])  # Barack Obama's uncle is Luigi
     cq = Query('Q12379', Relation.BROTHER, ['Q210593'])  # Mario's brother is Luigi
     tc = TestCase(tq, [cq])
-    tr = TestRunner(GPT2QueryExecutor(model_size='medium'), ROMEModelEditor('gpt2-medium'))
+    qe = GPT2QueryExecutor(model_size='medium')
+    me = ROMEModelEditor(qe)
+    tr = TestRunner(qe, me)
     res = tr.run_testcases(e, [tc])
     print('------')
     print(f)

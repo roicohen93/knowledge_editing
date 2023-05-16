@@ -5,8 +5,9 @@ from queryexecutor import QueryExecutor
 
 class ModelEditor:
 
-    def __init__(self, model_name=None):
-        self._model_name = model_name
+    def __init__(self, query_executor):
+        self._query_executor = query_executor
+        self._model_name = self._query_executor.get_model_name()
 
     @staticmethod
     def _format_fact_for_rome(fact):
@@ -22,8 +23,7 @@ class ModelEditor:
 class InContextModelEditor(ModelEditor):
 
     def __init__(self, query_executor: QueryExecutor):
-        super().__init__()
-        self.query_executor = query_executor
+        super().__init__(query_executor)
 
     def edit_model(self, fact):
         raise NotImplementedError()  # Override in concrete classes
@@ -36,7 +36,7 @@ class InContextNaiveModelEditor(InContextModelEditor):
 
     def edit_model(self, fact):
         editing_prompt = fact.get_fact_phrased()
-        edited_executor = self.query_executor.copy()
+        edited_executor = self._query_executor.copy()
         edited_executor.add_to_editing_prompt(f'{editing_prompt}\n')
         print(edited_executor.editing_prompt)
         return edited_executor
@@ -44,8 +44,8 @@ class InContextNaiveModelEditor(InContextModelEditor):
 
 class MEMITModelEditor(ModelEditor):
 
-    def __init__(self, model_name):
-        super().__init__(model_name)
+    def __init__(self, query_executor):
+        super().__init__(query_executor)
 
     def edit_model(self, model, tokenizer, fact):
         # TODO: Fixup imports
@@ -64,8 +64,8 @@ class MEMITModelEditor(ModelEditor):
 
 class ROMEModelEditor(ModelEditor):
 
-    def __init__(self, model_name):
-        super().__init__(model_name)
+    def __init__(self, query_executor):
+        super().__init__(query_executor)
 
     def edit_model(self, model, tokenizer, fact):
         # TODO: Fixup imports
@@ -84,8 +84,8 @@ class ROMEModelEditor(ModelEditor):
 
 class MENDModelEditor(ModelEditor):
 
-    def __init__(self, model_name):
-        super().__init__(model_name)
+    def __init__(self, query_executor):
+        super().__init__(query_executor)
 
     def edit_model(self, model, tokenizer, fact):
         # TODO: Fixup imports
