@@ -187,8 +187,7 @@ if __name__ == '__main__':
     # counterfactuals_dataset = construct_counterfactuaals_benchmark()
     # print(counterfactuals_dataset.sample(5)[0])
 
-    recently_modified_benchmark = construct_recently_modified_benchmark()
-    recently_modified_benchmark.examples = random.sample(recently_modified_benchmark.examples, 20000)
+    recently_modified_benchmark = construct_recently_modified_benchmark(20000)
     recently_modified_benchmark.to_file('./benchmark/recently_modified.json')
 
     # for example in recently_modified_facts.sample(5):
