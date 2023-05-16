@@ -50,7 +50,7 @@ def construct_recently_modified_benchmark(size: int = None):
         except:
             continue
         i += 1
-        if i % 10 == 0:
+        if i % 100 == 0:
             print(f'Built {i}/{len(current_data)}')
     return Dataset(dataset_list)
 
@@ -187,7 +187,10 @@ if __name__ == '__main__':
     # counterfactuals_dataset = construct_counterfactuaals_benchmark()
     # print(counterfactuals_dataset.sample(5)[0])
 
-    # recently_modified_facts = construct_recently_modified_benchmark()
+    recently_modified_benchmark = construct_recently_modified_benchmark()
+    recently_modified_benchmark.examples = random.sample(recently_modified_benchmark.examples, 20000)
+    recently_modified_benchmark.to_file('./benchmark/recently_modified.json')
+
     # for example in recently_modified_facts.sample(5):
     #     if example.fact._relation == Relation.MOTHER or example.fact._relation == Relation.FATHER:
     #         print(example)
@@ -200,8 +203,9 @@ if __name__ == '__main__':
     # dataset = construct_fake_edits_benchmark(all_relevant_facts)
     # for example in dataset.sample(5):
     #     print(example)
-    top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=5000, limit_num_of_facts=3)
-    top_views_benchmark.to_file('./benchmark/top_views.json')
+
+    # top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=5000, limit_num_of_facts=3)
+    # top_views_benchmark.to_file('./benchmark/top_views.json')
 
 
 
