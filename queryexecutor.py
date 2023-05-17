@@ -25,6 +25,9 @@ class QueryExecutor:
     def get_tokenizer(self):
         return self._tokenizer
 
+    def get_device(self):
+        return self._device
+
     def get_model_name(self):
         raise NotImplementedError()  # Override in concrete classes
 
@@ -40,9 +43,6 @@ class QueryExecutor:
         print(f'query: {query.to_dict()}\nmodel answer: {model_answer}')
         return self._verify_answer(model_answer, query.get_answers())
 
-    def copy(self):
-        raise NotImplementedError()  # Override in concrete classes
-
     def _generate_text(self, prompt, length):
         raise NotImplementedError()  # Override in concrete classes
 
@@ -53,9 +53,6 @@ class HFQueryExecutor(QueryExecutor):
         super().__init__(model, tokenizer, device)
 
     def get_model_name(self):
-        raise NotImplementedError()  # Override in concrete classes
-
-    def copy(self):
         raise NotImplementedError()  # Override in concrete classes
 
     def _generate_text(self, prompt, length):
@@ -79,9 +76,6 @@ class GPT2QueryExecutor(HFQueryExecutor):
     def get_model_name(self):
         return self._model_name
 
-    def copy(self):
-        return GPT2QueryExecutor(self._model_size, self._device, deepcopy(self._model), deepcopy(self._tokenizer))
-
 
 class GPTJQueryExecutor(HFQueryExecutor):
 
@@ -96,9 +90,6 @@ class GPTJQueryExecutor(HFQueryExecutor):
     def get_model_name(self):
         return 'EleutherAI_gpt-j-6B'
 
-    def copy(self):
-        return GPTJQueryExecutor(self._device, deepcopy(self._model), deepcopy(self._tokenizer))
-
 
 class GPTNeoXQueryExecutor(HFQueryExecutor):
 
@@ -112,9 +103,6 @@ class GPTNeoXQueryExecutor(HFQueryExecutor):
 
     def get_model_name(self):
         return 'EleutherAI_gpt-neox-20b'
-
-    def copy(self):
-        return GPTNeoXQueryExecutor(self._device, deepcopy(self._model), deepcopy(self._tokenizer))
 
 
 class LlamaQueryExecutor(HFQueryExecutor):
@@ -131,9 +119,6 @@ class LlamaQueryExecutor(HFQueryExecutor):
 
     def get_model_name(self):
         return self._model_name
-
-    def copy(self):
-        return LlamaQueryExecutor(self._model_size, self._device, deepcopy(self._model), deepcopy(self._tokenizer))
 
 
 class GPT3QueryExecutor(QueryExecutor):
