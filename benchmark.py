@@ -148,7 +148,7 @@ class Dataset:
         return random.sample(self.examples, min(k, len(self.examples)))
 
     def to_file(self, filename):
-        with open(filename, 'w', encoding='utf-8') as f:
+        with open(filename, 'w+', encoding='utf-8') as f:
             d = [example.to_dict() for example in self.examples]
             json.dump(d, f, ensure_ascii=False, indent=2)
 
