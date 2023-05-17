@@ -15,6 +15,14 @@ class Query:
             return self._relation.phrase(get_label(self._subject_id))
         return self._phrase
 
+    @staticmethod
+    def _filter_answers(answers):
+        filtered_answers = []
+        for answer in answers:
+            if len(answer) > 1 or answer.isdigit():
+                filtered_answers.append(answer)
+        return filtered_answers
+
     def get_answers(self):
         answers = []
         for target in self._targets_ids:
@@ -22,7 +30,7 @@ class Query:
                 target_answer = [get_label(target)] + get_aliases(target)
             else:
                 target_answer = [str(target)]
-            answers.append(target_answer)
+            answers.append(self._filter_answers(target_answer))
         return answers
 
     def to_dict(self):
@@ -70,7 +78,7 @@ class TwoHopQuery(Query):
                 target_answer = [get_label(target)] + get_aliases(target)
             else:
                 target_answer = [str(target)]
-            answers.append(target_answer)
+            answers.append(self._filter_answers(target_answer))
         return answers
 
     def to_dict(self):
