@@ -90,11 +90,11 @@ if __name__ == '__main__':
 
     precisions_json = dict()
     num_of_examples = 100
-    succeeded_edits = 0
-    average_precision = 0
-    average_executed = 0
-    average_size = 0
-    total_checked_examples = 0
+    succeeded_edits = defaultdict(lambda: 0)
+    average_precision = defaultdict(lambda: 0)
+    average_executed = defaultdict(lambda: 0)
+    average_size = defaultdict(lambda: 0)
+    total_checked_examples = defaultdict(lambda: 0)
     executed_portion_dict = defaultdict(lambda: 0)
     for i, example in enumerate(fake_facts.sample(num_of_examples)):
         if i % 5 == 0:
@@ -102,27 +102,30 @@ if __name__ == '__main__':
 
         davinvci_query_executor.clean_editing_prompt()
         evaluation_results = evaluator.evaluate(example)
-        making_up_results = evaluation_results[TestsAxis.MAKING_UP]
-        precision, executed, size, edit_succeeded = making_up_results
-        if edit_succeeded:
-            succeeded_edits += 1
-        average_precision += precision
-        average_executed += executed
-        average_size += size
-        precisions_json[str(example.fact)] = precision
-        total_checked_examples += 1
+
+        for axis, results in evaluation_results.items():
+            precision, executed, size, edit_succeeded = results
+            if edit_succeeded:
+                succeeded_edits[axis] += 1
+            average_precision[axis] += precision
+            average_executed[axis] += executed
+            average_size[axis] += size
+            precisions_json[str(example.fact)] = precision
+            total_checked_examples[axis] += 1
 
         for axis in TestsAxis:
             if axis in evaluation_results:
                 executed_portion_dict[axis] += evaluation_results[axis][1]
 
-    average_precision /= total_checked_examples
-    average_executed /= total_checked_examples
-    average_size /= total_checked_examples
-    print(f'{(succeeded_edits / num_of_examples)*100} successful edits (out of {num_of_examples})')
-    print(f'Average making-up precision is {average_precision}')
-    print(f'Average portion of executed_tests is {average_executed}')
-    print(f'Average total number of tests is {average_size}')
+    for axis in TestsAxis:
+        average_precision[axis] /= total_checked_examples[axis]
+        average_executed[axis] /= total_checked_examples[axis]
+        average_size[axis] /= total_checked_examples[axis]
+        print(f'Results of axis {axis}:')
+        print(f'{(succeeded_edits[axis]  / num_of_examples)*100} successful edits (out of {num_of_examples})')
+        print(f'Average making-up precision is {average_precision[axis] }')
+        print(f'Average portion of executed_tests is {average_executed[axis] }')
+        print(f'Average total number of tests is {average_size[axis] }')
 
     for axis, total in executed_portion_dict:
         print(f'{axis}: {total / total_checked_examples}')

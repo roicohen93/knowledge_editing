@@ -41,6 +41,9 @@ class TestRunner:
             if not self._query_executor.execute_query(example.previous_fact.get_fact_query()):
                 example_result = ExampleResult.PREV_FACT_UNKNOWN
 
+        if self._model_editor is None:
+            return example_result, test_results
+
         # Modify model
         self._model_editor.edit_model(example.fact)
 
