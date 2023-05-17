@@ -1,3 +1,6 @@
+from query import Query
+
+
 class TestCase:
 
     OR_TEST_CONDITION = 'OR'
@@ -29,16 +32,23 @@ class TestCase:
             'condition_queries': [query.to_dict() for query in self._condition_queries]
         }
 
+    @staticmethod
+    def from_dict(d):
+        tests = [Query.from_dict(test) for test in d['test_queries']]
+        test_condition = d['test_condition']
+        conditions = [Query.from_dict(condition) for condition in d['condition_queries']]
+        return TestCase(tests, conditions, test_condition)
+
     def __str__(self):
         res = 'Test Queries:\n'
         for query in self._test_queries:
             query_dict = query.to_dict()
-            res += f"Query: {query_dict['input_prompt']}, " \
+            res += f"Query: {query_dict['prompt']}, " \
                    f"Answer: {query_dict['answers'][0]['value']}\n"
         res += f'Test Condition: {self._test_condition}\n'
         res += 'Condition Queries:\n'
         for query in self._condition_queries:
             query_dict = query.to_dict()
-            res += f"Query: {query_dict['input_prompt']}, " \
+            res += f"Query: {query_dict['prompt']}, " \
                    f"Answer: {query_dict['answers'][0]['value']}\n"
         return res

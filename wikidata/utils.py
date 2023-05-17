@@ -66,21 +66,37 @@ def facts_list_to_relation2targets(facts: list):
 
 
 def wikidata_item_given_id(ent_id: str):
-    return WikidataItem(get_entity_dict_from_api(ent_id))
+    try:
+        return WikidataItem(get_entity_dict_from_api(ent_id))
+    except:
+        return None
 
 
 def get_label(ent_id: str):
     if ent_id[0] != 'Q':
         return ent_id
-    return wikidata_item_given_id(ent_id).get_label()
+    item = wikidata_item_given_id(ent_id)
+    if item is not None:
+        label = item.get_label()
+    else:
+        return ent_id
+    if label is None:
+        return ent_id
+    return label
 
 
 def get_aliases(ent_id: str):
-    return wikidata_item_given_id(ent_id).get_aliases()
+    item = wikidata_item_given_id(ent_id)
+    if item is not None:
+        return item.get_aliases()
+    return [ent_id]
 
 
 def get_description(ent_id: str):
-    return wikidata_item_given_id(ent_id).get_description()
+    item = wikidata_item_given_id(ent_id)
+    if item is not None:
+        return item.get_description()
+    return [ent_id]
 
 
 def get_targets_given_item_and_relation(item: WikidataItem, relation_id: str):

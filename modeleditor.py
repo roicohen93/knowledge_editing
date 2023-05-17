@@ -1,31 +1,35 @@
 import sys
 import os
+import torch
+
 from queryexecutor import QueryExecutor
 
 
 class ModelEditor:
 
-    def __init__(self, model_name=None):
-        self._model_name = model_name
+    def __init__(self, query_executor):
+        self._query_executor = query_executor
+        self._model = self._query_executor.get_model()
+        self._tokenizer = self._query_executor.get_tokenizer()
+        self._model_name = self._query_executor.get_model_name()
+        self._model_device = self._query_executor.get_device()
 
-    @staticmethod
-    def _format_fact_for_rome(fact):
-        subject = fact.get_subject_label()
-        target = fact.get_target_label()
-        prompt = fact.get_fact_prompt().replace(subject, '{}')
-        return [{'prompt': prompt, 'subject': subject, 'target_new': {'str': target}}]
+    def edit_model(self, fact):
+        raise NotImplementedError()  # Override in concrete classes
 
-    def edit_model(self, model, tokenizer, fact):
+    def restore_model(self):
         raise NotImplementedError()  # Override in concrete classes
 
 
 class InContextModelEditor(ModelEditor):
 
     def __init__(self, query_executor: QueryExecutor):
-        super().__init__()
-        self.query_executor = query_executor
+        super().__init__(query_executor)
 
     def edit_model(self, fact):
+        raise NotImplementedError()  # Override in concrete classes
+
+    def restore_model(self):
         raise NotImplementedError()  # Override in concrete classes
 
 
@@ -36,18 +40,54 @@ class InContextNaiveModelEditor(InContextModelEditor):
 
     def edit_model(self, fact):
         editing_prompt = fact.get_fact_phrased()
-        edited_executor = self.query_executor.copy()
+        edited_executor = self._query_executor.copy()
         edited_executor.add_to_editing_prompt(f'{editing_prompt}\n')
         print(edited_executor.editing_prompt)
         return edited_executor
 
+    def restore_model(self):
+        raise NotImplementedError()  # Override in concrete classes
 
-class MEMITModelEditor(ModelEditor):
 
-    def __init__(self, model_name):
-        super().__init__(model_name)
+class RomeStyleModelEditor(ModelEditor):
 
-    def edit_model(self, model, tokenizer, fact):
+    def __init__(self, query_executor):
+        self._changed_weights = None
+        super().__init__(query_executor)
+
+    @staticmethod
+    def _format_fact_for_rome(fact):
+        subject = fact.get_subject_label()
+        target = fact.get_target_label()
+        prompt = fact.get_fact_prompt().replace(subject, '{}')
+        return [{'prompt': prompt, 'subject': subject, 'target_new': {'str': target}}]
+
+    def edit_model(self, fact):
+        raise NotImplementedError()  # Override in concrete classes
+
+    def restore_model(self):
+        if self._changed_weights is None:
+            return
+
+        # TODO: Fixup imports
+        os.chdir('./memit')
+        sys.path.append('.')
+        from util import nethook
+
+        with torch.no_grad():
+            for k, v in self._changed_weights.items():
+                nethook.get_parameter(self._model, k)[...] = v.to(self._model_device)
+
+        sys.path.remove('.')
+        os.chdir('..')
+
+
+class MEMITModelEditor(RomeStyleModelEditor):
+
+    def __init__(self, query_executor):
+        super().__init__(query_executor)
+
+    def edit_model(self, fact):
         # TODO: Fixup imports
         os.chdir('./memit')
         sys.path.append('.')
@@ -55,19 +95,18 @@ class MEMITModelEditor(ModelEditor):
 
         requests = self._format_fact_for_rome(fact)
         hparams = MEMITHyperParams.from_json(f'hparams/MEMIT/{self._model_name}.json')
-        new_model, _ = apply_memit_to_model(model, tokenizer, requests, hparams)
+        _, self._changed_weights = apply_memit_to_model(self._model, self._tokenizer, requests, hparams, return_orig_weights=True)
 
         sys.path.remove('.')
         os.chdir('..')
-        return new_model
 
 
-class ROMEModelEditor(ModelEditor):
+class ROMEModelEditor(RomeStyleModelEditor):
 
-    def __init__(self, model_name):
-        super().__init__(model_name)
+    def __init__(self, query_executor):
+        super().__init__(query_executor)
 
-    def edit_model(self, model, tokenizer, fact):
+    def edit_model(self, fact):
         # TODO: Fixup imports
         os.chdir('./memit')
         sys.path.append('.')
@@ -75,28 +114,26 @@ class ROMEModelEditor(ModelEditor):
 
         requests = self._format_fact_for_rome(fact)
         hparams = ROMEHyperParams.from_json(f'hparams/ROME/{self._model_name}.json')
-        new_model, _ = apply_rome_to_model(model, tokenizer, requests, hparams)
+        _, self._changed_weights = apply_rome_to_model(self._model, self._tokenizer, requests, hparams, return_orig_weights=True)
 
         sys.path.remove('.')
         os.chdir('..')
-        return new_model
 
 
-class MENDModelEditor(ModelEditor):
+class MENDModelEditor(RomeStyleModelEditor):
 
-    def __init__(self, model_name):
-        super().__init__(model_name)
+    def __init__(self, query_executor):
+        super().__init__(query_executor)
 
-    def edit_model(self, model, tokenizer, fact):
+    def edit_model(self, fact):
         # TODO: Fixup imports
-        os.chdir('./rome')
+        os.chdir('./memit')
         sys.path.append('.')
         from baselines.mend import MENDHyperParams, MendRewriteExecutor
 
         requests = self._format_fact_for_rome(fact)
         hparams = MENDHyperParams.from_json(f'hparams/MEND/{self._model_name}.json')
-        new_model, _ = MendRewriteExecutor().apply_to_model(model, tokenizer, requests, hparams)
+        _, self._changed_weights = MendRewriteExecutor().apply_to_model(self._model, self._tokenizer, requests, hparams, return_orig_weights=True)
 
         sys.path.remove('.')
         os.chdir('..')
-        return new_model

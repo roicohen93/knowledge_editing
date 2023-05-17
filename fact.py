@@ -1,3 +1,4 @@
+from relation import Relation
 from wikidata.utils import get_label
 from query import Query
 
@@ -29,10 +30,15 @@ class Fact:
 
     def to_dict(self):
         return {
+            'prompt': self.get_fact_phrased(),
             'subject_id': self._subject_id,
             'relation': self._relation.name,
             'target_id': self._target_id
         }
+
+    @staticmethod
+    def from_dict(d):
+        return Fact(d['subject_id'], Relation[d['relation']], d['target_id'])
 
     def __str__(self):
         return f'({self.get_subject_label()}, {self.get_relation_label()}, {self.get_target_label()})'

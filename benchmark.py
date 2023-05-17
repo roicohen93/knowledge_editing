@@ -1,7 +1,9 @@
-from fact import Fact
-from testcase import TestCase
 import random
 from enum import Enum, auto
+import json
+
+from fact import Fact
+from testcase import TestCase
 
 
 class TestsAxis(Enum):
@@ -28,6 +30,33 @@ class Example:
         self.two_hop_tests = two_hop_tests
         self.prev_storage_tests = prev_storage_tests
 
+    def create_example_dict(self, example_type):
+        return {
+            'example_type': example_type,
+            'fact': self.fact.to_dict(),
+            'making_up_tests': [test.to_dict() for test in self.making_up_tests],
+            'logical_constraints': [test.to_dict() for test in self.logical_constraints],
+            'subject_paraphrasing_tests': [test.to_dict() for test in self.subject_paraphrasing_tests],
+            'two_hop_tests': [test.to_dict() for test in self.two_hop_tests],
+            'prev_storage_tests': [test.to_dict() for test in self.prev_storage_tests],
+        }
+
+    @staticmethod
+    def from_dict(d):
+        fact = Fact.from_dict(d['fact'])
+        making_up_tests = [TestCase.from_dict(test) for test in d['making_up_tests']]
+        logical_constraints = [TestCase.from_dict(test) for test in d['logical_constraints']]
+        subject_paraphrasing_tests = [TestCase.from_dict(test) for test in d['subject_paraphrasing_tests']]
+        two_hop_tests = [TestCase.from_dict(test) for test in d['two_hop_tests']]
+        prev_storage_tests = [TestCase.from_dict(test) for test in d['prev_storage_tests']]
+        if d['example_type'] == 'counter_fact':
+            previous_fact = Fact.from_dict(d['previous_fact'])
+            return CounterFactualExample(fact, previous_fact, making_up_tests, logical_constraints, subject_paraphrasing_tests, two_hop_tests, prev_storage_tests)
+        elif d['example_type'] == 'recently_added_fact':
+            return RecentlyAddedExample(fact, making_up_tests, logical_constraints, subject_paraphrasing_tests, two_hop_tests, prev_storage_tests)
+        else:
+            print('Unknown fact type')
+
     def __str__(self):
         res = f'Fact: {str(self.fact)}\n'
         res += f'Making Up tests:\n'
@@ -44,6 +73,7 @@ class Example:
         res += '\n'
         res += f'Previous Storage tests:'
         res += self.str_list_of_tests(self.prev_storage_tests)
+        res += '\n'
         return res
     
     @staticmethod
@@ -75,6 +105,16 @@ class CounterFactualExample(Example):
         )
         self.previous_fact = previous_fact
 
+    def to_dict(self):
+        d = super().create_example_dict('counter_fact')
+        d['previous_fact'] = self.previous_fact.to_dict()
+        return d
+
+    def __str__(self):
+        res = super().__str__()
+        res += f'Previous Fact: {str(self.previous_fact)}\n'
+        return res
+
 
 class RecentlyAddedExample(Example):
 
@@ -95,6 +135,9 @@ class RecentlyAddedExample(Example):
             prev_storage_tests
         )
 
+    def to_dict(self):
+        return super().create_example_dict('recently_added_fact')
+
 
 class Dataset:
 
@@ -103,3 +146,14 @@ class Dataset:
 
     def sample(self, k: int):
         return random.sample(self.examples, min(k, len(self.examples)))
+
+    def to_file(self, filename):
+        with open(filename, 'w+', encoding='utf-8') as f:
+            d = [example.to_dict() for example in self.examples]
+            json.dump(d, f, ensure_ascii=False, indent=2)
+
+    @staticmethod
+    def from_file(filename):
+        with open(filename, 'r', encoding='utf-8') as f:
+            examples = json.load(f)
+        return Dataset([Example.from_dict(example) for example in examples])
