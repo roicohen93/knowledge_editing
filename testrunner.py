@@ -73,6 +73,7 @@ if __name__ == '__main__':
     from relation import Relation
     from query import Query
     from testcase import TestCase
+    import gc
 
     f = Fact('Q76', Relation.FATHER, 'Q12379')  # Barack Obama's father is Mario
     f_prev = Fact('Q76', Relation.FATHER, 'Q649593')  # Barack Obama's father is Barack Obama Sr.
@@ -81,12 +82,31 @@ if __name__ == '__main__':
     tq = Query('Q76', Relation.UNCLE, ['Q210593'])  # Barack Obama's uncle is Luigi
     cq = Query('Q12379', Relation.BROTHER, ['Q210593'])  # Mario's brother is Luigi
     tc = TestCase(tq, [cq])
-    qe = GPT2QueryExecutor(model_size='medium')
+    qe = GPT2QueryExecutor(model_size='xl')
+
+    print('--------------------------------------------')
+    print('Testing MEND')
+    me = MENDModelEditor(qe)
+    tr = TestRunner(qe, me)
+    res = tr.run_testcases(e, [tc])
+    print(res)
+    print(qe.execute_query(f.get_fact_query()))
+    print('--------------------------------------------')
+
+    print('--------------------------------------------')
+    print('Testing ROME')
     me = ROMEModelEditor(qe)
     tr = TestRunner(qe, me)
     res = tr.run_testcases(e, [tc])
-    print('------')
-    print(f)
-    print(tc)
     print(res)
     print(qe.execute_query(f.get_fact_query()))
+    print('--------------------------------------------')
+
+    print('--------------------------------------------')
+    print('Testing MEMIT')
+    me = MEMITModelEditor(qe)
+    tr = TestRunner(qe, me)
+    res = tr.run_testcases(e, [tc])
+    print(res)
+    print(qe.execute_query(f.get_fact_query()))
+    print('--------------------------------------------')

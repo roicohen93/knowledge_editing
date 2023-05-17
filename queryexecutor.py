@@ -70,7 +70,7 @@ class GPT2QueryExecutor(HFQueryExecutor):
             tokenizer = AutoTokenizer.from_pretrained(self._model_name)
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
-            model = GPT2LMHeadModel.from_pretrained(self._model_name, pad_token_id=tokenizer.eos_token_id)
+            model = GPT2LMHeadModel.from_pretrained(self._model_name, device_map="auto", pad_token_id=tokenizer.eos_token_id)
         super().__init__(model, tokenizer, device)
 
     def get_model_name(self):
