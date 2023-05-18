@@ -198,8 +198,8 @@ if __name__ == '__main__':
     # counterfactuals_dataset = construct_counterfactuaals_benchmark()
     # print(counterfactuals_dataset.sample(5)[0])
 
-    # recently_modified_benchmark = construct_recently_modified_benchmark(20000)
-    # recently_modified_benchmark.to_file('./benchmark/recently_modified.json')
+    recently_modified_benchmark = construct_recently_modified_benchmark(2000)
+    recently_modified_benchmark.to_file('./benchmark/recently_modified.json')
 
     # for example in recently_modified_facts.sample(5):
     #     if example.fact._relation == Relation.MOTHER or example.fact._relation == Relation.FATHER:
@@ -214,8 +214,8 @@ if __name__ == '__main__':
     # for example in dataset.sample(5):
     #     print(example)
 
-    top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=2000, limit_num_of_facts=3)
-    top_views_benchmark.to_file('./benchmark/top_views_subset.json')
+    # top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=2000, limit_num_of_facts=3)
+    # top_views_benchmark.to_file('./benchmark/top_views_subset.json')
 
 
 
