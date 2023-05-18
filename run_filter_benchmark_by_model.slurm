@@ -4,7 +4,7 @@
 #SBATCH --output=./gptj_out.txt
 #SBATCH --error=./gptj_err.txt
 #SBATCH --partition=killable
-#SBATCH --time=300
+#SBATCH --time=1000
 #SBATCH --signal=USR1@120 # how to end job when time’s up
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
