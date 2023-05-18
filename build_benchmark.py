@@ -118,7 +118,9 @@ def filter_facts_based_on_conditions_passed(facts: list, query_executor: QueryEx
 
 def all_relevant_facts_given_list_of_subjects(subjects: list):
     facts = []
-    for subject_id in subjects:
+    for i, subject_id in enumerate(subjects):
+        if (i+1) % 100 == 0:
+            print(f'{i+1}/{len(subjects)}')
         relevant_relation_ids = ent_to_relation_ids(subject_id)
         for relation_id in relevant_relation_ids:
             relation_enum = Relation.id_to_enum(relation_id)
@@ -207,7 +209,8 @@ if __name__ == '__main__':
     # for example in dataset.sample(5):
     #     print(example)
 
-    top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=100, limit_num_of_facts=2)
+    # top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=100, limit_num_of_facts=2)
+    top_views_benchmark = construct_fake_dataset_based_on_top_views_file()
     top_views_benchmark.to_file('./benchmark/top_views_subset.json')
 
 
