@@ -1,6 +1,7 @@
 import random
 from enum import Enum, auto
 import json
+from pathlib import Path
 
 from fact import Fact
 from testcase import TestCase
@@ -148,8 +149,10 @@ class Dataset:
         return random.sample(self.examples, min(k, len(self.examples)))
 
     def to_file(self, filename):
-        with open(filename, 'w+', encoding='utf-8') as f:
-            d = [example.to_dict() for example in self.examples]
+        p = Path(filename)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        d = [example.to_dict() for example in self.examples]
+        with p.open('w+', encoding='utf-8') as f:
             json.dump(d, f, ensure_ascii=False, indent=2)
 
     @staticmethod
