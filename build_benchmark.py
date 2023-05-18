@@ -83,7 +83,7 @@ def construct_fake_edits_benchmark(facts:list):
         random_target_id = ent_label2id(random.sample(optional_targets, 1)[0])
         if random_target_id is None:
             continue
-        dataset_list.append(build_fake_dataset_example(subject_id, relation, target_id, random_target_id))
+        dataset_list.append(build_fake_dataset_example(subject_id, relation, random_target_id, target_id))
         cnt += 1
         if cnt % 100 == 0:
             print(f'{cnt}/{len(facts)}')
@@ -198,9 +198,9 @@ if __name__ == '__main__':
     # counterfactuals_dataset = construct_counterfactuaals_benchmark()
     # print(counterfactuals_dataset.sample(5)[0])
 
-    recently_modified_size = 2000
-    recently_modified_benchmark = construct_recently_modified_benchmark(recently_modified_size)
-    recently_modified_benchmark.to_file(f'./benchmark/recently_modified_{recently_modified_size}.json')
+    # recently_modified_size = 2000
+    # recently_modified_benchmark = construct_recently_modified_benchmark(recently_modified_size)
+    # recently_modified_benchmark.to_file(f'./benchmark/recently_modified_{recently_modified_size}.json')
 
     # for example in recently_modified_facts.sample(5):
     #     if example.fact._relation == Relation.MOTHER or example.fact._relation == Relation.FATHER:
@@ -215,8 +215,8 @@ if __name__ == '__main__':
     # for example in dataset.sample(5):
     #     print(example)
 
-    # top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=2000, limit_num_of_facts=3)
-    # top_views_benchmark.to_file('./benchmark/top_views_subset.json')
+    top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=2000, limit_num_of_facts=3)
+    top_views_benchmark.to_file('./benchmark/top_views_subset.json')
 
 
 
