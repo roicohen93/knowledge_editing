@@ -215,8 +215,8 @@ if __name__ == '__main__':
     # for example in dataset.sample(5):
     #     print(example)
 
-    top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=2000, limit_num_of_facts=3)
-    top_views_benchmark.to_file('./benchmark/top_views_subset.json')
+    top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=2000, limit_num_of_facts=3, limit_subjects=20000)
+    top_views_benchmark.to_file('./benchmark/top_views_1000.json')
 
 
 
