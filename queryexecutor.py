@@ -114,7 +114,7 @@ class LlamaQueryExecutor(HFQueryExecutor):
             tokenizer = LlamaTokenizer.from_pretrained(f'decapoda-research/{self._model_name}-hf')
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
-            model = LlamaForCausalLM.from_pretrained(f'decapoda-research/{self._model_name}-hf', device_map="auto", offload_folder="offload", offload_state_dict=True, pad_token_id=tokenizer.eos_token_id)
+            model = LlamaForCausalLM.from_pretrained(f'decapoda-research/{self._model_name}-hf', device_map="auto", offload_folder="offload", torch_dtype=torch.float16, offload_state_dict=True, pad_token_id=tokenizer.eos_token_id)
         super().__init__(model, tokenizer, device)
 
     def get_model_name(self):
