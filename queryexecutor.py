@@ -98,7 +98,7 @@ class GPTNeoXQueryExecutor(HFQueryExecutor):
             tokenizer = GPTNeoXTokenizerFast.from_pretrained('EleutherAI/gpt-neox-20b')
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
-            model = GPTNeoXForCausalLM.from_pretrained('EleutherAI/gpt-neox-20b', device_map="auto", offload_folder="offload", offload_state_dict=True, pad_token_id=tokenizer.eos_token_id)
+            model = GPTNeoXForCausalLM.from_pretrained('EleutherAI/gpt-neox-20b', device_map="auto", offload_folder="offload", offload_state_dict=True, torch_dtype=torch.float16, pad_token_id=tokenizer.eos_token_id)
         super().__init__(model, tokenizer, device)
 
     def get_model_name(self):

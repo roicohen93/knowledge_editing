@@ -15,6 +15,12 @@ ARCHITECT_OF_PHRASE = "the architect of <subject>"
 COMPOSER_OF_PHRASE = "the composer of <subject>"
 FOUNDER_OF_PHRASE = "the founder of <subject>"
 COUNTRY_OF_PHRASE = "the country <subject> is associated with"
+PLACE_OF_BIRTH_OF_PHRASE = "the country which <subject> was born in"
+PLACE_OF_DEATH_OF_PHRASE = "the country which <subject> died in"
+PLACE_OF_BURIAL_OF_PHRASE = "the country which <subject> is buried in"
+COUNTRY_OF_CITIZENSHIP_OF_PHRASE = "the country of citizenship of <subject>"
+CAPITAL_OF_PHRASE = "the country which <subject> is the capital of"
+EMPLOYER_OF_PHRASE = "the employer of <subject>"
 
 relation_relation2phrase = {
 
@@ -521,6 +527,55 @@ relation_relation2phrase = {
     f'{Relation.FOUNDER.name}-{Relation.DATE_OF_DEATH.name}': Relation.DATE_OF_DEATH.phrase(FOUNDER_OF_PHRASE),
     f'{Relation.FOUNDER.name}-{Relation.IS_ALIVE.name}': Relation.IS_ALIVE.phrase(FOUNDER_OF_PHRASE),
 
+    f'{Relation.PLACE_OF_BIRTH.name}-{Relation.HEAD_OF_GOVERNMENT.name}': Relation.HEAD_OF_GOVERNMENT.phrase(PLACE_OF_BIRTH_OF_PHRASE),
+    f'{Relation.PLACE_OF_BIRTH.name}-{Relation.HEAD_OF_STATE.name}': Relation.HEAD_OF_STATE.phrase(PLACE_OF_BIRTH_OF_PHRASE),
+    f'{Relation.PLACE_OF_BIRTH.name}-{Relation.CONTINENT.name}': Relation.CONTINENT.phrase(PLACE_OF_BIRTH_OF_PHRASE),
+    f'{Relation.PLACE_OF_BIRTH.name}-{Relation.CAPITAL.name}': Relation.CAPITAL.phrase(PLACE_OF_BIRTH_OF_PHRASE),
+    f'{Relation.PLACE_OF_BIRTH.name}-{Relation.CURRENCY.name}': Relation.CURRENCY.phrase(PLACE_OF_BIRTH_OF_PHRASE),
+    f'{Relation.PLACE_OF_BIRTH.name}-{Relation.OFFICIAL_LANGUAGE.name}': Relation.OFFICIAL_LANGUAGE.phrase(PLACE_OF_BIRTH_OF_PHRASE),
+    f'{Relation.PLACE_OF_BIRTH.name}-{Relation.ANTHEM.name}': Relation.ANTHEM.phrase(PLACE_OF_BIRTH_OF_PHRASE),
+
+    f'{Relation.PLACE_OF_DEATH.name}-{Relation.HEAD_OF_GOVERNMENT.name}': Relation.HEAD_OF_GOVERNMENT.phrase(PLACE_OF_DEATH_OF_PHRASE),
+    f'{Relation.PLACE_OF_DEATH.name}-{Relation.HEAD_OF_STATE.name}': Relation.HEAD_OF_STATE.phrase(PLACE_OF_DEATH_OF_PHRASE),
+    f'{Relation.PLACE_OF_DEATH.name}-{Relation.CONTINENT.name}': Relation.CONTINENT.phrase(PLACE_OF_DEATH_OF_PHRASE),
+    f'{Relation.PLACE_OF_DEATH.name}-{Relation.CAPITAL.name}': Relation.CAPITAL.phrase(PLACE_OF_DEATH_OF_PHRASE),
+    f'{Relation.PLACE_OF_DEATH.name}-{Relation.CURRENCY.name}': Relation.CURRENCY.phrase(PLACE_OF_DEATH_OF_PHRASE),
+    f'{Relation.PLACE_OF_DEATH.name}-{Relation.OFFICIAL_LANGUAGE.name}': Relation.OFFICIAL_LANGUAGE.phrase(PLACE_OF_DEATH_OF_PHRASE),
+    f'{Relation.PLACE_OF_DEATH.name}-{Relation.ANTHEM.name}': Relation.ANTHEM.phrase(PLACE_OF_DEATH_OF_PHRASE),
+
+    f'{Relation.PLACE_OF_BURIAL.name}-{Relation.HEAD_OF_GOVERNMENT.name}': Relation.HEAD_OF_GOVERNMENT.phrase(PLACE_OF_BURIAL_OF_PHRASE),
+    f'{Relation.PLACE_OF_BURIAL.name}-{Relation.HEAD_OF_STATE.name}': Relation.HEAD_OF_STATE.phrase(PLACE_OF_BURIAL_OF_PHRASE),
+    f'{Relation.PLACE_OF_BURIAL.name}-{Relation.CONTINENT.name}': Relation.CONTINENT.phrase(PLACE_OF_BURIAL_OF_PHRASE),
+    f'{Relation.PLACE_OF_BURIAL.name}-{Relation.CAPITAL.name}': Relation.CAPITAL.phrase(PLACE_OF_BURIAL_OF_PHRASE),
+    f'{Relation.PLACE_OF_BURIAL.name}-{Relation.CURRENCY.name}': Relation.CURRENCY.phrase(PLACE_OF_BURIAL_OF_PHRASE),
+    f'{Relation.PLACE_OF_BURIAL.name}-{Relation.OFFICIAL_LANGUAGE.name}': Relation.OFFICIAL_LANGUAGE.phrase(PLACE_OF_BURIAL_OF_PHRASE),
+    f'{Relation.PLACE_OF_BURIAL.name}-{Relation.ANTHEM.name}': Relation.ANTHEM.phrase(PLACE_OF_BURIAL_OF_PHRASE),
+
+    f'{Relation.COUNTRY.name}-{Relation.HEAD_OF_GOVERNMENT.name}': Relation.HEAD_OF_GOVERNMENT.phrase(COUNTRY_OF_PHRASE),
+    f'{Relation.COUNTRY.name}-{Relation.HEAD_OF_STATE.name}': Relation.HEAD_OF_STATE.phrase(COUNTRY_OF_PHRASE),
+    f'{Relation.COUNTRY.name}-{Relation.CONTINENT.name}': Relation.CONTINENT.phrase(COUNTRY_OF_PHRASE),
+    f'{Relation.COUNTRY.name}-{Relation.CAPITAL.name}': Relation.CAPITAL.phrase(COUNTRY_OF_PHRASE),
+    f'{Relation.COUNTRY.name}-{Relation.CURRENCY.name}': Relation.CURRENCY.phrase(COUNTRY_OF_PHRASE),
+    f'{Relation.COUNTRY.name}-{Relation.OFFICIAL_LANGUAGE.name}': Relation.OFFICIAL_LANGUAGE.phrase(COUNTRY_OF_PHRASE),
+    f'{Relation.COUNTRY.name}-{Relation.ANTHEM.name}': Relation.ANTHEM.phrase(COUNTRY_OF_PHRASE),
+
+    f'{Relation.COUNTRY_OF_CITIZENSHIP.name}-{Relation.HEAD_OF_GOVERNMENT.name}': Relation.HEAD_OF_GOVERNMENT.phrase(COUNTRY_OF_CITIZENSHIP_OF_PHRASE),
+    f'{Relation.COUNTRY_OF_CITIZENSHIP.name}-{Relation.HEAD_OF_STATE.name}': Relation.HEAD_OF_STATE.phrase(COUNTRY_OF_CITIZENSHIP_OF_PHRASE),
+    f'{Relation.COUNTRY_OF_CITIZENSHIP.name}-{Relation.CONTINENT.name}': Relation.CONTINENT.phrase(COUNTRY_OF_CITIZENSHIP_OF_PHRASE),
+    f'{Relation.COUNTRY_OF_CITIZENSHIP.name}-{Relation.CAPITAL.name}': Relation.CAPITAL.phrase(COUNTRY_OF_CITIZENSHIP_OF_PHRASE),
+    f'{Relation.COUNTRY_OF_CITIZENSHIP.name}-{Relation.CURRENCY.name}': Relation.CURRENCY.phrase(COUNTRY_OF_CITIZENSHIP_OF_PHRASE),
+    f'{Relation.COUNTRY_OF_CITIZENSHIP.name}-{Relation.OFFICIAL_LANGUAGE.name}': Relation.OFFICIAL_LANGUAGE.phrase(COUNTRY_OF_CITIZENSHIP_OF_PHRASE),
+    f'{Relation.COUNTRY_OF_CITIZENSHIP.name}-{Relation.ANTHEM.name}': Relation.ANTHEM.phrase(COUNTRY_OF_CITIZENSHIP_OF_PHRASE),
+
+    f'{Relation.CAPITAL_OF.name}-{Relation.HEAD_OF_GOVERNMENT.name}': Relation.HEAD_OF_GOVERNMENT.phrase(CAPITAL_OF_PHRASE),
+    f'{Relation.CAPITAL_OF.name}-{Relation.HEAD_OF_STATE.name}': Relation.HEAD_OF_STATE.phrase(CAPITAL_OF_PHRASE),
+    f'{Relation.CAPITAL_OF.name}-{Relation.CONTINENT.name}': Relation.CONTINENT.phrase(CAPITAL_OF_PHRASE),
+    f'{Relation.CAPITAL_OF.name}-{Relation.CAPITAL.name}': Relation.CAPITAL.phrase(CAPITAL_OF_PHRASE),
+    f'{Relation.CAPITAL_OF.name}-{Relation.CURRENCY.name}': Relation.CURRENCY.phrase(CAPITAL_OF_PHRASE),
+    f'{Relation.CAPITAL_OF.name}-{Relation.OFFICIAL_LANGUAGE.name}': Relation.OFFICIAL_LANGUAGE.phrase(CAPITAL_OF_PHRASE),
+    f'{Relation.CAPITAL_OF.name}-{Relation.ANTHEM.name}': Relation.ANTHEM.phrase(CAPITAL_OF_PHRASE),
+
+    f'{Relation.EMPLOYER.name}-{Relation.FOUNDER.name}': Relation.FOUNDER.phrase(EMPLOYER_OF_PHRASE),
 }
 
 

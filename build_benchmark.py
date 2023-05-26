@@ -83,7 +83,7 @@ def construct_fake_edits_benchmark(facts:list):
         random_target_id = ent_label2id(random.sample(optional_targets, 1)[0])
         if random_target_id is None:
             continue
-        dataset_list.append(build_fake_dataset_example(subject_id, relation, target_id, random_target_id))
+        dataset_list.append(build_fake_dataset_example(subject_id, relation, random_target_id, target_id))
         cnt += 1
         if cnt % 100 == 0:
             print(f'{cnt}/{len(facts)}')
@@ -116,9 +116,11 @@ def filter_facts_based_on_conditions_passed(facts: list, query_executor: QueryEx
         example = build_fake_dataset_example(subject_id, relation_enum, target_id, prev_target_id)
 
 
-def all_relevant_facts_given_list_of_subjects(subjects: list):
+def all_relevant_facts_given_list_of_subjects(subjects: list, limit: int = None):
     facts = []
-    for subject_id in subjects:
+    for i, subject_id in enumerate(subjects):
+        if (i+1) % 100 == 0:
+            print(f'{i+1}/{len(subjects)}')
         relevant_relation_ids = ent_to_relation_ids(subject_id)
         for relation_id in relevant_relation_ids:
             relation_enum = Relation.id_to_enum(relation_id)
@@ -127,10 +129,12 @@ def all_relevant_facts_given_list_of_subjects(subjects: list):
             targets = subject_relation_to_targets(subject_id, relation_id)
             for target_id in targets:
                 facts.append((subject_id, relation_enum, target_id))
+        if limit is not None and len(facts) > limit:
+            break
     return facts
 
 
-def sample_relevant_facts_given_list_of_subjects(subjects: list, number_of_facts_each: int):
+def sample_relevant_facts_given_list_of_subjects(subjects: list, number_of_facts_each: int, limit: int = None):
     facts = []
     for i, subject_id in enumerate(subjects):
         if (i+1) % 100 == 0:
@@ -145,22 +149,25 @@ def sample_relevant_facts_given_list_of_subjects(subjects: list, number_of_facts
             if targets:
                 random_target = random.sample(targets, 1)[0]
                 facts.append((subject_id, relation_enum, random_target))
+        if limit is not None and len(facts) > limit:
+            break
     return facts
 
 
-def construct_fake_dataset_based_on_top_views_file(limit: int = None, limit_num_of_facts: int = None):
+def construct_fake_dataset_based_on_top_views_file(limit: int = None,
+                                                   limit_subjects: int = None, limit_num_of_facts: int = None):
     subjects_json = load_json('./wikidata/top_entities_by_views_monthly.json')
     subject_list = []
     for month, subjects in subjects_json.items():
         subject_list.extend(subjects)
     subject_ids = [subject['id'] for subject in subject_list]
-    if limit is not None:
-        subject_ids = random.sample(subject_ids, min(limit, len(subject_ids)))
+    if limit_subjects is not None:
+        subject_ids = random.sample(subject_ids, min(limit_subjects, len(subject_ids)))
     print('extracting facts..')
     if limit_num_of_facts is None:
-        all_relevant_facts = all_relevant_facts_given_list_of_subjects(subject_ids)
+        all_relevant_facts = all_relevant_facts_given_list_of_subjects(subject_ids, limit)
     else:
-        all_relevant_facts = sample_relevant_facts_given_list_of_subjects(subject_ids, limit_num_of_facts)
+        all_relevant_facts = sample_relevant_facts_given_list_of_subjects(subject_ids, limit_num_of_facts, limit)
     print('building dataset..')
     dataset = construct_fake_edits_benchmark(all_relevant_facts)
     return dataset
@@ -191,8 +198,9 @@ if __name__ == '__main__':
     # counterfactuals_dataset = construct_counterfactuaals_benchmark()
     # print(counterfactuals_dataset.sample(5)[0])
 
-    # recently_modified_benchmark = construct_recently_modified_benchmark(20000)
-    # recently_modified_benchmark.to_file('./benchmark/recently_modified.json')
+    # recently_modified_size = 2000
+    # recently_modified_benchmark = construct_recently_modified_benchmark(recently_modified_size)
+    # recently_modified_benchmark.to_file(f'./benchmark/recently_modified_{recently_modified_size}.json')
 
     # for example in recently_modified_facts.sample(5):
     #     if example.fact._relation == Relation.MOTHER or example.fact._relation == Relation.FATHER:
@@ -207,8 +215,8 @@ if __name__ == '__main__':
     # for example in dataset.sample(5):
     #     print(example)
 
-    top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=100, limit_num_of_facts=2)
-    top_views_benchmark.to_file('./benchmark/top_views_subset.json')
+    top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=1000, limit_num_of_facts=3, limit_subjects=20000)
+    top_views_benchmark.to_file('./benchmark/top_views_1000.json')
 
 
 

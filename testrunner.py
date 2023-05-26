@@ -22,16 +22,17 @@ class TestRunner:
         self._query_executor = query_executor
         self._model_editor = model_editor
 
-    def run_testcases(self, example, test_cases):
+    def run_testcases(self, example, test_cases, skip_preconditions=False):
         example_result = ExampleResult.EXECUTED
         test_results = {TestResult.NOT_EXECUTED: [], TestResult.PASSED: [], TestResult.FAILED: []}
 
         # Check testcase conditions
-        for test_case in test_cases:
-            for condition_query in test_case.get_condition_queries():
-                if not self._query_executor.execute_query(condition_query):
-                    test_results[TestResult.NOT_EXECUTED].append(test_case)
-                    break
+        if not skip_preconditions:
+            for test_case in test_cases:
+                for condition_query in test_case.get_condition_queries():
+                    if not self._query_executor.execute_query(condition_query):
+                        test_results[TestResult.NOT_EXECUTED].append(test_case)
+                        break
 
         # Check if fact is known/unknown according to example type
         if isinstance(example, RecentlyAddedExample):
