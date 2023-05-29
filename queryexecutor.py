@@ -1,18 +1,20 @@
 import torch
-from transformers import AutoTokenizer, GPT2LMHeadModel, GPTJForCausalLM, GPTNeoXForCausalLM, GPTNeoXTokenizerFast, LlamaForCausalLM, LlamaTokenizer
-from copy import deepcopy
+from transformers import AutoTokenizer, GPT2LMHeadModel, GPTJForCausalLM, GPTNeoXForCausalLM, LlamaForCausalLM
 from utils import call_openai, process_generation
 
 
 class QueryExecutor:
 
-    def __init__(self, model=None, tokenizer=None, device=None):
+    def __init__(self, model=None, tokenizer=None, device=None, send_to_device=True):
         if device is None:
             self._device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         else:
             self._device = device
         if model:
-            self._model = model.to(self._device)
+            if send_to_device:
+                self._model = model.to(self._device)
+            else:
+                self._model = model
         if tokenizer:
             self._tokenizer = tokenizer
 
@@ -49,8 +51,8 @@ class QueryExecutor:
 
 class HFQueryExecutor(QueryExecutor):
 
-    def __init__(self, model=None, tokenizer=None, device=None):
-        super().__init__(model, tokenizer, device)
+    def __init__(self, model=None, tokenizer=None, device=None, send_to_device=True):
+        super().__init__(model, tokenizer, device, send_to_device)
 
     def get_model_name(self):
         raise NotImplementedError()  # Override in concrete classes
@@ -95,11 +97,11 @@ class GPTNeoXQueryExecutor(HFQueryExecutor):
 
     def __init__(self, device=None, model=None, tokenizer=None):
         if tokenizer is None:
-            tokenizer = GPTNeoXTokenizerFast.from_pretrained('EleutherAI/gpt-neox-20b')
+            tokenizer = AutoTokenizer.from_pretrained('EleutherAI/gpt-neox-20b')
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
             model = GPTNeoXForCausalLM.from_pretrained('EleutherAI/gpt-neox-20b', device_map="auto", offload_folder="offload", offload_state_dict=True, torch_dtype=torch.float16, pad_token_id=tokenizer.eos_token_id)
-        super().__init__(model, tokenizer, device)
+        super().__init__(model, tokenizer, device, send_to_device=False)
 
     def get_model_name(self):
         return 'EleutherAI_gpt-neox-20b'
@@ -111,11 +113,11 @@ class LlamaQueryExecutor(HFQueryExecutor):
         self._model_size = model_size
         self._model_name = f'llama-{self._model_size}'
         if tokenizer is None:
-            tokenizer = LlamaTokenizer.from_pretrained(f'decapoda-research/{self._model_name}-hf')
+            tokenizer = AutoTokenizer.from_pretrained(f'huggyllama/{self._model_name}')
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
-            model = LlamaForCausalLM.from_pretrained(f'decapoda-research/{self._model_name}-hf', device_map="auto", offload_folder="offload", offload_state_dict=True, pad_token_id=tokenizer.eos_token_id)
-        super().__init__(model, tokenizer, device)
+            model = LlamaForCausalLM.from_pretrained(f'huggyllama/{self._model_name}', device_map="auto", offload_folder="offload", offload_state_dict=True)
+        super().__init__(model, tokenizer, device, send_to_device=False)
 
     def get_model_name(self):
         return self._model_name
