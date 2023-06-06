@@ -250,7 +250,7 @@ if __name__ == '__main__':
     fake_size = 2000
     fake_benchmark = construct_fake_dataset_based_on_top_views_file(limit=fake_size, limit_num_of_facts=10,
                                                                limit_subjects=100000)
-    fake_benchmark.to_file(f'./benchmark/fake_{top_views_size}.json')
+    fake_benchmark.to_file(f'./benchmark/fake_{fake_size}.json')
 
 
 
