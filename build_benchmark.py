@@ -134,7 +134,7 @@ def all_relevant_facts_given_list_of_subjects(subjects: list, limit: int = None)
             targets = subject_relation_to_targets(subject_id, relation_id)
             for target_id in targets:
                 facts.append((subject_id, relation_enum, target_id))
-        if limit is not None and len(facts) > limit:
+        if limit is not None and len(facts) >= limit:
             break
     return facts
 
@@ -154,7 +154,7 @@ def sample_relevant_facts_given_list_of_subjects(subjects: list, number_of_facts
             if targets:
                 random_target = random.sample(targets, 1)[0]
                 facts.append((subject_id, relation_enum, random_target))
-        if limit is not None and len(facts) > limit:
+        if limit is not None and len(facts) >= limit:
             break
     return facts
 
@@ -243,14 +243,14 @@ if __name__ == '__main__':
     # for example in dataset.sample(5):
     #     print(example)
 
-    # top_views_size = 2000
-    # top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=top_views_size, limit_num_of_facts=10, limit_subjects=100000)
-    # top_views_benchmark.to_file(f'./benchmark/top_views_{top_views_size}.json')
+    top_views_size = 400
+    top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=top_views_size, limit_num_of_facts=10, limit_subjects=100000)
+    top_views_benchmark.to_file(f'./benchmark/top_views_{top_views_size}.json')
 
-    fake_size = 2000
-    fake_benchmark = construct_fake_dataset_based_on_top_views_file(limit=fake_size, limit_num_of_facts=10,
-                                                               limit_subjects=100000)
-    fake_benchmark.to_file(f'./benchmark/fake_{fake_size}.json')
+    # fake_size = 2000
+    # fake_benchmark = construct_fake_dataset_based_on_top_views_file(limit=fake_size, limit_num_of_facts=10,
+    #                                                            limit_subjects=100000)
+    # fake_benchmark.to_file(f'./benchmark/fake_{fake_size}.json')
 
 
 
