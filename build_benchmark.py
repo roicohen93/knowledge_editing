@@ -175,6 +175,28 @@ def construct_fake_dataset_based_on_top_views_file(limit: int = None,
         all_relevant_facts = sample_relevant_facts_given_list_of_subjects(subject_ids, limit_num_of_facts, limit)
     print(f'have got {len(all_relevant_facts)} relevant facts to sample from')
     print('building dataset..')
+    random.shuffle(all_relevant_facts)
+    dataset = construct_fake_edits_benchmark(all_relevant_facts)
+    return dataset
+
+
+def construct_fake_dataset_based_on_sampled_buckets(path: str, limit: int = None,
+                                                   limit_subjects: int = None, limit_num_of_facts: int = None):
+    subjects_json = load_json(path)
+    subject_list = []
+    for bucket in subjects_json:
+        subject_list.extend(bucket)
+    subject_ids = [ent_label2id(subject_label) for subject_label in subject_list]
+    if limit_subjects is not None:
+        subject_ids = random.sample(subject_ids, min(limit_subjects, len(subject_ids)))
+    print('extracting facts..')
+    if limit_num_of_facts is None:
+        all_relevant_facts = all_relevant_facts_given_list_of_subjects(subject_ids, limit)
+    else:
+        all_relevant_facts = sample_relevant_facts_given_list_of_subjects(subject_ids, limit_num_of_facts, limit)
+    print(f'have got {len(all_relevant_facts)} relevant facts to sample from')
+    print('building dataset..')
+    random.shuffle(all_relevant_facts)
     dataset = construct_fake_edits_benchmark(all_relevant_facts)
     return dataset
         
@@ -224,6 +246,11 @@ if __name__ == '__main__':
     # top_views_size = 2000
     # top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=top_views_size, limit_num_of_facts=10, limit_subjects=100000)
     # top_views_benchmark.to_file(f'./benchmark/top_views_{top_views_size}.json')
+
+    fake_size = 2000
+    fake_benchmark = construct_fake_dataset_based_on_top_views_file(limit=fake_size, limit_num_of_facts=10,
+                                                               limit_subjects=100000)
+    fake_benchmark.to_file(f'./benchmark/fake_{top_views_size}.json')
 
 
 
