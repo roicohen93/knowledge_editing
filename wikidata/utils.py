@@ -213,6 +213,9 @@ def subjects_given_relation_target(relation_id: str, target_id: str, limit: int 
     LIMIT {limit}
     """
 
-    res = return_sparql_query_results(sparql_query)
-    return sparkql_res_to_list_of_entities(res)
+    try:
+        res = return_sparql_query_results(sparql_query)
+        return sparkql_res_to_list_of_entities(res)
+    except:
+        return []
 
