@@ -17,10 +17,11 @@ class Relation(Enum):
     CHILD = ('P40', 'The name of the child of <subject> is', ['NUMBER_OF_CHILDREN'], False)
     NUMBER_OF_CHILDREN = ('P1971', 'The number of children <subject> has is', [], True)
     SEX_OR_GENDER = ('P21', "The gender of <subject> is", [], True)
-    PLACE_OF_BIRTH = ('P19', 'The name of the country which <subject> was born in is', ['country of citizenship'], True)
+    PLACE_OF_BIRTH = ('P19', 'The name of the country which <subject> was born in is', [], True)
     PLACE_OF_DEATH = ('P20', 'The name of the country which <subject> died in is', ['is alive'], True)
     PLACE_OF_BURIAL = ('P119', 'The name of the country which <subject> is buried in is', ['is alive'], True)
-    COUNTRY = ('P17', 'The name of the country which <subject> is associated with is', [], True)
+    COUNTRY = ('P17', 'The name of the country which <subject> is associated with is',
+               ['continent', 'official language', 'capital of', 'currency'], True)
     COUNTRY_OF_CITIZENSHIP = ('P27', 'The name of the country of citizenship of <subject> is', [], False)
     POSITION_HELD = ('P39', 'The name of the position held by <subject> is', [], False)
     STEPFATHER = ('P43', 'The name of the stepfather of <subject> is', ['number of children'], True)
@@ -35,7 +36,8 @@ class Relation(Enum):
     NATIVE_LANGUAGE = ('P03', 'The mother tongue of <subject> is', [], False)
     AWARD_RECEIVED = ('P166', 'The name of the award <subject> won is', [], False)
     FOLLOWS = ('P155', '<subject> follows', [], True)
-    ETHNIC_GROUP = ('P172', 'The name of the ethnic group which <subject> is associated with is', [], False)
+    FOLLOWED_BY = ('P156', '<subject> is followed by', [], True)
+    ETHNIC_GROUP = ('P172', 'The name of the ethnic group which <subject> is associated with is', ['religion'], False)
     RELIGION = ('P140', 'The name of the religion which <subject> is associated with is', [], False)
     EYE_COLOR = ('P1340', 'The eye color of <subject> is', [], True)
     DATE_OF_BIRTH = ('P569', 'The date of birth of <subject> is', [], True)
@@ -50,6 +52,7 @@ class Relation(Enum):
     CURRENCY = ('P38', 'The name of the currency in <subject> is', [], False)
     OFFICIAL_LANGUAGE = ('P37', 'The official language of <subject> is', [], False)
     ANTHEM = ('P85', 'The name of the anthem of <subject> is', [], True)
+    LIKELY_ANTHEM = ('', 'The name of the anthem that is most likely to be performed in <subject> is', [], True)
 
     # Subject is a city
     CAPITAL_OF = ('P1376', 'The name of the country which <subject> is the capital of is',

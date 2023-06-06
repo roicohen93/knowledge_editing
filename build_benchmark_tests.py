@@ -1,5 +1,6 @@
 from wikidata.relations import our_relations, relation2impacted_relations, relation2phrase
-from wikidata.utils import subject_relation_to_targets, ent_to_relation_ids, get_label, get_aliases, get_description
+from wikidata.utils import subject_relation_to_targets, ent_to_relation_ids, get_label, get_aliases, get_description, \
+    subjects_given_relation_target
 from build_logical_constraints import generate_constraints
 from utils import create_test_example_given_input_targets
 from relation import Relation
@@ -60,6 +61,24 @@ def two_hop_axis(subject_id: str, relation: Relation, target_id: str):
             phrase = phrase.replace('<subject>', get_label(subject_id))
             test_query = TwoHopQuery(subject_id, relation, target_id, second_relation_enum, second_hop_target, phrase)
             condition_queries = [Query(target_id, second_relation_enum, second_hop_target)]
+            tests.append(TestCase(test_query=test_query, condition_queries=condition_queries))
+    return tests
+
+
+def forward_two_hop_axis(subject_id: str, relation: Relation, target_id: str):
+    tests = []
+    if not target_id or target_id[0] != 'Q':
+        return tests
+    for backward_relation in Relation:
+        backward_relation_id = backward_relation.id()
+        backward_subjects = subjects_given_relation_target(backward_relation_id, subject_id)
+        for backward_subject in backward_subjects:
+            phrase = relation_couple_to_phrase(backward_relation, relation)
+            if phrase is None:
+                continue
+            phrase = phrase.replace('<subject>', get_label(backward_subject))
+            test_query = TwoHopQuery(backward_subject, backward_relation, subject_id, relation, target_id, phrase)
+            condition_queries = [Query(backward_subject, backward_relation, subject_id)]
             tests.append(TestCase(test_query=test_query, condition_queries=condition_queries))
     return tests
 

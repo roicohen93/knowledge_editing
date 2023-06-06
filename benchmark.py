@@ -12,6 +12,7 @@ class TestsAxis(Enum):
     LOGICAL_CONSTRAINTS = auto()
     SUBJECT_PARAPHRASING = auto()
     TWO_HOP = auto()
+    FORWARD_TWO_HOP = auto()
     PREVIOUS_STORAGE = auto()
 
 
@@ -23,12 +24,14 @@ class Example:
                  logical_constraints: list = [],
                  subject_paraphrasing_tests: list = [],
                  two_hop_tests: list = [],
+                 forward_two_hop_tests: list = [],
                  prev_storage_tests: list = []):
         self.fact = fact
         self.making_up_tests = making_up_tests
         self.logical_constraints = logical_constraints
         self.subject_paraphrasing_tests = subject_paraphrasing_tests
         self.two_hop_tests = two_hop_tests
+        self.forward_two_hop_tests = forward_two_hop_tests
         self.prev_storage_tests = prev_storage_tests
 
     def create_example_dict(self, example_type):
@@ -39,6 +42,7 @@ class Example:
             'logical_constraints': [test.to_dict() for test in self.logical_constraints],
             'subject_paraphrasing_tests': [test.to_dict() for test in self.subject_paraphrasing_tests],
             'two_hop_tests': [test.to_dict() for test in self.two_hop_tests],
+            'forward_two_hop_tests': [test.to_dict() for test in self.forward_two_hop_tests],
             'prev_storage_tests': [test.to_dict() for test in self.prev_storage_tests],
         }
 
@@ -49,12 +53,15 @@ class Example:
         logical_constraints = [TestCase.from_dict(test) for test in d['logical_constraints']]
         subject_paraphrasing_tests = [TestCase.from_dict(test) for test in d['subject_paraphrasing_tests']]
         two_hop_tests = [TestCase.from_dict(test) for test in d['two_hop_tests']]
+        forward_two_hop_tests = [TestCase.from_dict(test) for test in d['forward_two_hop_tests']]
         prev_storage_tests = [TestCase.from_dict(test) for test in d['prev_storage_tests']]
         if d['example_type'] == 'counter_fact':
             previous_fact = Fact.from_dict(d['previous_fact'])
-            return CounterFactualExample(fact, previous_fact, making_up_tests, logical_constraints, subject_paraphrasing_tests, two_hop_tests, prev_storage_tests)
+            return CounterFactualExample(fact, previous_fact, making_up_tests, logical_constraints,
+                                         subject_paraphrasing_tests, two_hop_tests, forward_two_hop_tests, prev_storage_tests)
         elif d['example_type'] == 'recently_added_fact':
-            return RecentlyAddedExample(fact, making_up_tests, logical_constraints, subject_paraphrasing_tests, two_hop_tests, prev_storage_tests)
+            return RecentlyAddedExample(fact, making_up_tests, logical_constraints, subject_paraphrasing_tests,
+                                        two_hop_tests, forward_two_hop_tests, prev_storage_tests)
         else:
             print('Unknown fact type')
 
@@ -71,6 +78,9 @@ class Example:
         res += '\n'
         res += f'Two-Hop tests:\n'
         res += self.str_list_of_tests(self.two_hop_tests)
+        res += '\n'
+        res += f'Forward Two-Hop tests:\n'
+        res += self.str_list_of_tests(self.forward_two_hop_tests)
         res += '\n'
         res += f'Previous Storage tests:'
         res += self.str_list_of_tests(self.prev_storage_tests)
@@ -94,6 +104,7 @@ class CounterFactualExample(Example):
                  logical_constraints: list = [],
                  subject_paraphrasing_tests: list = [],
                  two_hop_tests: list = [],
+                 forward_two_hop_tests: list = [],
                  prev_storage_tests: list = []
                  ):
         super().__init__(
@@ -102,6 +113,7 @@ class CounterFactualExample(Example):
             logical_constraints,
             subject_paraphrasing_tests,
             two_hop_tests,
+            forward_two_hop_tests,
             prev_storage_tests
         )
         self.previous_fact = previous_fact
@@ -125,6 +137,7 @@ class RecentlyAddedExample(Example):
                  logical_constraints: list = [],
                  subject_paraphrasing_tests: list = [],
                  two_hop_tests: list = [],
+                 forward_two_hop_tests: list = [],
                  prev_storage_tests: list = []
                  ):
         super().__init__(
@@ -133,6 +146,7 @@ class RecentlyAddedExample(Example):
             logical_constraints,
             subject_paraphrasing_tests,
             two_hop_tests,
+            forward_two_hop_tests,
             prev_storage_tests
         )
 

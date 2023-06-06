@@ -3,6 +3,8 @@ import os
 from collections import defaultdict
 from qwikidata.linked_data_interface import get_entity_dict_from_api
 from qwikidata.entity import WikidataItem
+from qwikidata.sparql import return_sparql_query_results
+
 
 
 def load_json(path: str):
@@ -153,4 +155,64 @@ def ent_label2id(label: str):
     if label not in ent_label2id_dict:
         return None
     return ent_label2id_dict[label]
+
+
+def extract_ent_id_from_url(url: str):
+    pointer = len(url) - 1
+    while url[pointer] != '/':
+        pointer -= 1
+    return url[pointer+1:]
+
+
+def sparkql_res_to_list_of_facts(sparkql_res: dict, relation_id: str):
+    resulted_facts = []
+    for returned_fact in sparkql_res['results']['bindings']:
+        subject, target = returned_fact['item'], returned_fact['target']
+
+        # handling subject
+        if subject['type'] == 'uri':
+            subject = extract_ent_id_from_url(subject['value'])
+        elif subject['type'] == 'literal':
+            subject = subject['value']
+
+        # handling target
+        if target['type'] == 'uri':
+            target = extract_ent_id_from_url(target['value'])
+        elif target['type'] == 'literal':
+            target = target['value']
+
+        resulted_facts.append((subject, relation_id, target))
+
+    return resulted_facts
+
+
+def sparkql_res_to_list_of_entities(sparkql_res: dict):
+    resulted_entities = []
+    for returned_ent in sparkql_res['results']['bindings']:
+        subject = returned_ent['itemLabel']
+
+        # handling subject
+        if subject['type'] == 'uri':
+            subject = extract_ent_id_from_url(subject['value'])
+        elif subject['type'] == 'literal':
+            subject = subject['value']
+
+        resulted_entities.append(subject)
+
+    return resulted_entities
+
+
+def subjects_given_relation_target(relation_id: str, target_id: str, limit: int = 10):
+    sparql_query = f"""
+    SELECT DISTINCT ?item ?itemLabel 
+    WHERE
+    {{
+      ?item wdt:{relation_id} wd:{target_id};
+      SERVICE wikibase:label {{ bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }}
+    }}
+    LIMIT {limit}
+    """
+
+    res = return_sparql_query_results(sparql_query)
+    return sparkql_res_to_list_of_entities(res)
 

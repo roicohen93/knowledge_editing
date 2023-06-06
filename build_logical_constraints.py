@@ -16,11 +16,18 @@ class RelationalConstraints:
         self.conditions = []
 
     def _targets(self, relation: Relation):
-        return self.edits[relation] if relation in self.edits else subject_relation_to_targets(
+        targets = self.edits[relation] if relation in self.edits else subject_relation_to_targets(
             self.subject_id, relation)
+        self.conditions.append(Query(self.subject_id, relation, targets))
+        return targets
 
-    def _targets_of(self, subject_ids: list, relation: Relation):
+    def _edited_targets_only(self, relation: Relation):
+        return self.edits[relation] if relation in self.edits else None
+
+    def _targets_of(self, subject_ids, relation: Relation):
         targets = []
+        if not isinstance(subject_ids, list):
+            subject_ids = [subject_ids]
         for subject_id in subject_ids:
             targets += subject_relation_to_targets(subject_id, relation)
             self.conditions.append(Query(subject_id, relation, targets))
@@ -40,6 +47,17 @@ class RelationalConstraints:
             condition_queries=self.conditions
         )
 
+    def sibling_of(self, ent_id: str):
+        self.empty_conditions()
+        mothers = self._targets_of(ent_id, Relation.MOTHER)
+        fathers = self._targets(ent_id, Relation.FATHER)
+        mother_children = self._targets_of(mothers, Relation.CHILD)
+        father_children = self._targets_of(fathers, Relation.CHILD)
+        return TestCase(
+            test_query=Query(ent_id, Relation.SIBLING, mother_children + father_children),
+            condition_queries=self.conditions
+        )
+
     def mothers_child(self):
         mother = self._targets(Relation.MOTHER)[0]
         return TestCase(
@@ -54,10 +72,21 @@ class RelationalConstraints:
             condition_queries=[]
         )
 
-    def sibling_of_brother(self):
-        brother = self._targets(Relation.BROTHER)[0]
+    def sibling_of_new_sibling(self):
+        new_sibling = self._edited_targets_only(Relation.BROTHER)
+        if new_sibling is None:
+            new_sibling = self._edited_targets_only(Relation.SISTER)
+        if new_sibling is None:
+            new_sibling = self._edited_targets_only(Relation.SIBLING)
         return TestCase(
-            test_query=Query(brother, Relation.SIBLING, [self.subject_id]),
+            test_query=Query(new_sibling, Relation.SIBLING, [self.subject_id]),
+            condition_queries=[]
+        )
+
+    def spouse_of_new_spouse(self):
+        new_spouse = self._targets(Relation.SPOUSE)
+        return TestCase(
+            test_query=Query(new_spouse, Relation.SIBLING, [self.subject_id]),
             condition_queries=[]
         )
 
@@ -78,6 +107,39 @@ class RelationalConstraints:
             test_query=Query(father, Relation.NUMBER_OF_CHILDREN, num_children + 1),
             condition_queries=self.conditions
         )
+
+    def mother_or_father_child(self):
+        self.empty_condition()
+        mother = self._targets(Relation.MOTHER)[0]
+        father = self._targets(Relation.FATHER)[0]
+
+        new_sibling = self._edited_targets_only(Relation.SIBLING)
+        if new_sibling is None:
+            new_sibling = self._edited_targets_only(Relation.SISTER)
+        if new_sibling is None:
+            new_sibling = self._edited_targets_only(Relation.BROTHER)
+
+        return TestCase(
+            test_query=[Query(mother, Relation.CHILD, new_sibling), Query(father, Relation.CHILD, new_sibling)],
+            condition_queries=self.conditions
+        )
+
+    def mother_or_father_of_new_sibling(self):
+        self.empty_condition()
+        mother = self._targets(Relation.MOTHER)[0]
+        father = self._targets(Relation.FATHER)[0]
+
+        new_sibling = self._edited_targets_only(Relation.SIBLING)
+        if new_sibling is None:
+            new_sibling = self._edited_targets_only(Relation.SISTER)
+        if new_sibling is None:
+            new_sibling = self._edited_targets_only(Relation.BROTHER)
+
+        return TestCase(
+            test_query=[Query(new_sibling, Relation.MOTHER, mother), Query(new_sibling, Relation.FATHER, father)],
+            condition_queries=self.conditions
+        )
+
 
     def uncle(self):
         self.empty_conditions()
@@ -109,12 +171,79 @@ class RelationalConstraints:
             condition_queries=self.conditions
         )
 
+    def is_dead_now(self):
+        self.empty_conditions()
+        return TestCase(
+            test_query=Query(self.subject_id, Relation.IS_ALIVE, ['yes', 'correct', 'true', 'is not alive', 'is_dead']),
+            condition_queries=self.conditions
+        )
+
+    def new_followed_by(self):
+        self.empty_conditions()
+        new_followed_one = self._edited_targets_only(Relation.FOLLOWS)
+        return TestCase(
+            test_query=Query(new_followed_one, Relation.FOLLOWED_BY, self.subject_id),
+            condition_queries=self.conditions
+        )
+
+    def new_follows(self):
+        self.empty_conditions()
+        new_following_one = self._edited_targets_only(Relation.FOLLOWED_BY)
+        return TestCase(
+            test_query=Query(new_following_one, Relation.FOLLOWED_BY, self.subject_id),
+            condition_queries=self.conditions
+        )
+
+    def continent(self):
+        self.empty_condition()
+        country_associated_with = self._edited_targets_only(Relation.COUNTRY)
+        if country_associated_with is None:
+            country_associated_with = self._edited_targets_only(Relation.CAPITAL_OF)
+        new_continent = self._targets_of(country_associated_with, Relation.CONTINENT)
+        return TestCase(
+            test_query=Query(self.subject_id, Relation.CONTINENT, new_continent),
+            condition_queries=self.conditions
+        )
+
+    def currency(self):
+        self.empty_condition()
+        country_associated_with = self._edited_targets_only(Relation.COUNTRY)
+        if country_associated_with is None:
+            country_associated_with = self._edited_targets_only(Relation.CAPITAL_OF)
+        new_continent = self._targets_of(country_associated_with, Relation.CURRENCY)
+        return TestCase(
+            test_query=Query(self.subject_id, Relation.CURRENCY, new_continent),
+            condition_queries=self.conditions
+        )
+
+    def official_language(self):
+        self.empty_condition()
+        country_associated_with = self._edited_targets_only(Relation.COUNTRY)
+        if country_associated_with is None:
+            country_associated_with = self._edited_targets_only(Relation.CAPITAL_OF)
+        new_continent = self._targets_of(country_associated_with, Relation.OFFICIAL_LANGUAGE)
+        return TestCase(
+            test_query=Query(self.subject_id, Relation.OFFICIAL_LANGUAGE, new_continent),
+            condition_queries=self.conditions
+        )
+
+    def likely_anthem(self):
+        self.empty_condition()
+        country_associated_with = self._edited_targets_only(Relation.COUNTRY)
+        if country_associated_with is None:
+            country_associated_with = self._edited_targets_only(Relation.CAPITAL_OF)
+        new_continent = self._targets_of(country_associated_with, Relation.ANTHEM)
+        return TestCase(
+            test_query=Query(self.subject_id, Relation.LIKELY_ANTHEM, new_continent),
+            condition_queries=self.conditions
+        )
+
 
 def generate_constraints(subject_id: str, relation: Relation, new_target_id: str):
     tests = []
+    constraints = RelationalConstraints(subject_id, {relation: [new_target_id]})
 
     if relation == Relation.MOTHER:
-        constraints = RelationalConstraints(subject_id, {Relation.MOTHER: [new_target_id]})
         tests.append(constraints.sibling())
         tests.append(constraints.uncle())
         tests.append(constraints.aunt())
@@ -122,7 +251,6 @@ def generate_constraints(subject_id: str, relation: Relation, new_target_id: str
         tests.append(constraints.mothers_number_of_children())
 
     if relation == Relation.FATHER:
-        constraints = RelationalConstraints(subject_id, {Relation.FATHER: [new_target_id]})
         tests.append(constraints.sibling())
         tests.append(constraints.uncle())
         tests.append(constraints.aunt())
@@ -130,9 +258,49 @@ def generate_constraints(subject_id: str, relation: Relation, new_target_id: str
         tests.append(constraints.fathers_number_of_children())
 
     if relation == Relation.BROTHER:
-        constraints = RelationalConstraints(subject_id, {Relation.BROTHER: [new_target_id]})
-        # mother or father child
-        tests.append(constraints.sibling_of_brother())
+        tests.append(constraints.mother_or_father_child())
+        tests.append(constraints.mother_or_father_of_new_sibling())
+        tests.append(constraints.sibling_of_new_sibling())
+
+    if relation == Relation.SISTER:
+        tests.append(constraints.mother_or_father_child())
+        tests.append(constraints.mother_or_father_of_new_sibling())
+        tests.append(constraints.sibling_of_new_sibling())
+
+    if relation == Relation.SIBLING:
+        tests.append(constraints.mother_or_father_child())
+        tests.append(constraints.mother_or_father_of_new_sibling())
+        tests.append(constraints.sibling_of_new_sibling())
+
+    if relation == Relation.SPOUSE:
+        tests.append(constraints.spouse_of_new_spouse())
+
+    if relation == Relation.PLACE_OF_DEATH:
+        tests.append(constraints.is_dead_now())
+
+    if relation == Relation.PLACE_OF_BURIAL:
+        tests.append(constraints.is_dead_now())
+
+    if relation == Relation.DATE_OF_DEATH:
+        tests.append(constraints.is_dead_now())
+
+    if relation == Relation.FOLLOWS:
+        tests.append(constraints.new_followed_by())
+
+    if relation == Relation.FOLLOWED_BY:
+        tests.append(constraints.new_follows())
+
+    if relation == Relation.COUNTRY:
+        tests.append(constraints.continent())
+        tests.append(constraints.currency())
+        tests.append(constraints.official_language())
+        tests.append(constraints.likely_anthem())
+
+    if relation == Relation.CAPITAL_OF:
+        tests.append(constraints.continent())
+        tests.append(constraints.currency())
+        tests.append(constraints.official_language())
+        tests.append(constraints.likely_anthem())
 
     return tests
 

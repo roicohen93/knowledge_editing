@@ -8,6 +8,7 @@ from build_benchmark_tests import \
     logical_constraints_axis, \
     subject_aliasing_axis, \
     two_hop_axis, \
+    forward_two_hop_axis, \
     temporal_axis
 from relation import Relation
 from fact import Fact
@@ -61,17 +62,19 @@ def build_recently_modified_dataset_example(subject_id: str, relation: Relation,
     logical_constraints = logical_constraints_axis(subject_id, relation, target_id)
     subject_aliasing_tests = subject_aliasing_axis(subject_id, relation, target_id)
     two_hop_tests = two_hop_axis(subject_id, relation, target_id)
+    forward_two_hop_tests = forward_two_hop_axis(subject_id, relation, target_id)
     curr_example = RecentlyAddedExample(
         fact=fact,
         making_up_tests=making_up_tests,
         logical_constraints=logical_constraints,
         subject_paraphrasing_tests=subject_aliasing_tests,
-        two_hop_tests=two_hop_tests
+        two_hop_tests=two_hop_tests,
+        forward_two_hop_tests=forward_two_hop_tests,
     )
     return curr_example
 
 
-def construct_fake_edits_benchmark(facts:list):
+def construct_fake_edits_benchmark(facts: list):
     dataset_list = []
     cnt = 0
     for subject_id, relation, target_id in facts:
@@ -97,6 +100,7 @@ def build_fake_dataset_example(subject_id: str, relation: Relation, target_id: s
     logical_constraints = logical_constraints_axis(subject_id, relation, target_id)
     subject_aliasing_tests = subject_aliasing_axis(subject_id, relation, target_id)
     two_hop_tests = two_hop_axis(subject_id, relation, target_id)
+    forward_two_hop_tests = forward_two_hop_axis(subject_id, relation, target_id)
     temporal_tests = temporal_axis(subject_id, relation, previous_target_id)
     curr_example = CounterFactualExample(
         fact=fact,
@@ -105,6 +109,7 @@ def build_fake_dataset_example(subject_id: str, relation: Relation, target_id: s
         logical_constraints=logical_constraints,
         subject_paraphrasing_tests=subject_aliasing_tests,
         two_hop_tests=two_hop_tests,
+        forward_two_hop_tests=forward_two_hop_tests,
         prev_storage_tests=temporal_tests,
     )
     return curr_example
@@ -168,6 +173,7 @@ def construct_fake_dataset_based_on_top_views_file(limit: int = None,
         all_relevant_facts = all_relevant_facts_given_list_of_subjects(subject_ids, limit)
     else:
         all_relevant_facts = sample_relevant_facts_given_list_of_subjects(subject_ids, limit_num_of_facts, limit)
+    print(f'have got {len(all_relevant_facts)} relevant facts to sample from')
     print('building dataset..')
     dataset = construct_fake_edits_benchmark(all_relevant_facts)
     return dataset
