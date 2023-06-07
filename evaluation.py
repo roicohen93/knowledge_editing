@@ -18,10 +18,10 @@ class Evaluator:
         self._model_editor = model_editor
         self._test_runner = TestRunner(query_executor, model_editor)
 
-    def average_acc(self, example: Example, test_cases: list):
+    def average_acc(self, example: Example, test_cases: list, skip_edit: bool = False, skip_restore: bool = False):
         if not len(test_cases):
             return 0.0, 0.0, 0.0, False
-        run_res = self._test_runner.run_testcases(example, test_cases)
+        run_res = self._test_runner.run_testcases(example, test_cases, skip_edit=skip_edit, skip_restore=skip_restore)
         fact_edit_succeeded, res_dict = run_res
         edit_succeeded = True
         if fact_edit_succeeded == ExampleResult.EDIT_FAILED:
@@ -33,22 +33,22 @@ class Evaluator:
         return successes / (successes + fails) if successes else 0.0, executed, len(test_cases), edit_succeeded
 
     def evaluate_making_up_axis(self, example: Example):
-        return self.average_acc(example, example.making_up_tests)
+        return self.average_acc(example, example.making_up_tests, skip_restore=True)
 
     def evaluate_logical_constraints(self, example: Example):
-        return self.average_acc(example, example.logical_constraints)
+        return self.average_acc(example, example.logical_constraints, skip_edit=True, skip_restore=True)
 
     def evaluate_subject_paraphrasing(self, example: Example):
-        return self.average_acc(example, example.subject_paraphrasing_tests)
+        return self.average_acc(example, example.subject_paraphrasing_tests, skip_edit=True, skip_restore=True)
 
     def evaluate_two_hop_tests(self, example: Example):
-        return self.average_acc(example, example.two_hop_tests)
+        return self.average_acc(example, example.two_hop_tests, skip_edit=True, skip_restore=True)
 
     def evaluate_forward_two_hop_tests(self, example: Example):
-        return self.average_acc(example, example.forward_two_hop_tests)
+        return self.average_acc(example, example.forward_two_hop_tests, skip_edit=True, skip_restore=True)
 
     def evaluate_prev_storage_tests(self, example: Example):
-        return self.average_acc(example, example.prev_storage_tests)
+        return self.average_acc(example, example.prev_storage_tests, skip_edit=True, skip_restore=False)
 
     def evaluate(self, example: Example):
         res = defaultdict()
@@ -94,7 +94,7 @@ if __name__ == '__main__':
     dataset = Dataset.from_file(dataset_path)
 
     precisions_json = dict()
-    num_of_examples = 100
+    num_of_examples = 200
 
     examples_for_eval = dataset.sample(num_of_examples)
     eval_size = len(examples_for_eval)
@@ -130,10 +130,16 @@ if __name__ == '__main__':
                 executed_portion_dict[axis] += evaluation_results[axis][1]
 
     for axis in TestsAxis:
+        print(f'Results of axis {axis}:')
+
+        if total_checked_examples[axis] == 0:
+            print(f'No checked tests for this axis')
+            continue
+
         average_precision[axis] /= total_checked_examples[axis]
         average_executed[axis] /= total_checked_examples[axis]
         average_size[axis] /= total_checked_examples[axis]
-        print(f'Results of axis {axis}:')
+
         print(f'{(succeeded_edits[axis]  / eval_size)*100} successful edits (out of {eval_size})')
         print(f'Average making-up precision is {average_precision[axis] }')
         print(f'Average portion of executed_tests is {average_executed[axis] }')
