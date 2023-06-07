@@ -1,8 +1,8 @@
 #! /bin/sh
 
-#SBATCH --job-name=gptj_100
-#SBATCH --output=./gptj_100_out.txt
-#SBATCH --error=./gptj_100_err.txt
+#SBATCH --job-name=gptneo
+#SBATCH --output=./gptneo_out.txt
+#SBATCH --error=./gptneo_err.txt
 #SBATCH --partition=killable
 #SBATCH --time=300
 #SBATCH --signal=USR1@120 # how to end job when time’s up

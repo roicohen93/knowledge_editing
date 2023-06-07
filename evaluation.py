@@ -73,7 +73,7 @@ class ConditionsEvaluator(Evaluator):
 
 
 if __name__ == '__main__':
-    model = 'gpt-j'
+    model = 'gpt-neo'
     editor = 'rome'
     dataset_path = './benchmark/filtered/gpt-j_1000.json'
 
