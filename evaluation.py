@@ -19,13 +19,18 @@ class Evaluator:
         self._test_runner = TestRunner(query_executor, model_editor)
 
     def average_acc(self, example: Example, test_cases: list, skip_edit: bool = False, skip_restore: bool = False):
-        if not len(test_cases):
+        if not len(test_cases) and skip_edit:
             return 0.0, 0.0, 0.0, False
+
         run_res = self._test_runner.run_testcases(example, test_cases, skip_edit=skip_edit, skip_restore=skip_restore)
         fact_edit_succeeded, res_dict = run_res
         edit_succeeded = True
         if fact_edit_succeeded == ExampleResult.EDIT_FAILED:
             edit_succeeded = False
+
+        if not len(test_cases):
+            return 0.0, 0.0, 0.0, edit_succeeded
+
         werent_executed = len(res_dict[TestResult.NOT_EXECUTED])
         successes = len(res_dict[TestResult.PASSED])
         fails = len(res_dict[TestResult.FAILED])
@@ -145,7 +150,4 @@ if __name__ == '__main__':
         print(f'Average portion of executed_tests is {average_executed[axis] }')
         print(f'Average total number of tests is {average_size[axis] }')
 
-    for axis, total in executed_portion_dict.items():
-        print(f'{axis}: {total / total_checked_examples}')
-
-    add_to_json(d=precisions_json, path='./results_data/results.json')
+    add_to_json(d=precisions_json, path=f'./results_data/{model}_{editor}.json')
