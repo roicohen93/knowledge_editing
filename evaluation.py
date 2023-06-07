@@ -44,6 +44,9 @@ class Evaluator:
     def evaluate_two_hop_tests(self, example: Example):
         return self.average_acc(example, example.two_hop_tests)
 
+    def evaluate_forward_two_hop_tests(self, example: Example):
+        return self.average_acc(example, example.forward_two_hop_tests)
+
     def evaluate_prev_storage_tests(self, example: Example):
         return self.average_acc(example, example.prev_storage_tests)
 
@@ -53,6 +56,7 @@ class Evaluator:
         res[TestsAxis.LOGICAL_CONSTRAINTS] = self.evaluate_logical_constraints(example)
         res[TestsAxis.SUBJECT_PARAPHRASING] = self.evaluate_subject_paraphrasing(example)
         res[TestsAxis.TWO_HOP] = self.evaluate_two_hop_tests(example)
+        res[TestsAxis.FORWARD_TWO_HOP] = self.evaluate_forward_two_hop_tests(example)
         res[TestsAxis.PREVIOUS_STORAGE] = self.evaluate_prev_storage_tests(example)
         return res
 
@@ -64,47 +68,55 @@ class ConditionsEvaluator(Evaluator):
 
 
 if __name__ == '__main__':
-    model = 'gpt2-meduim'
+    model = 'gpt-j'
+    editor = 'rome'
+    dataset_path = './benchmark/filtered/gpt-j_1000.json'
 
     davinvci_query_executor = GPT3QueryExecutor(model_size='text-davinci-003')
-    if model == 'gpt2-meduim':
+    if model == 'gpt2-medium':
         query_executor = GPT2QueryExecutor('medium')
-        rome_editor = ROMEModelEditor('gpt2-medium')
     if model == 'gpt2-large':
         query_executor = GPT2QueryExecutor('large')
-        rome_editor = ROMEModelEditor('gpt2-large')
+    if model == 'gpt2-xl':
+        query_executor = GPT2QueryExecutor('xl')
     if model == 'gpt-j':
         query_executor =GPTJQueryExecutor()
-        rome_editor = ROMEModelEditor('EleutherAI/gpt-j-6B')
     if model == 'gpt-neo':
         query_executor = GPTNeoXQueryExecutor()
-        rome_editor = ROMEModelEditor('EleutherAI_gpt-neox-20b')
     if model == 'llama':
         query_executor = LlamaQueryExecutor()
-        rome_editor = ROMEModelEditor('')
+
+    if editor == 'rome':
+        model_editor = ROMEModelEditor(query_executor)
 
     # evaluator = Evaluator(query_executor=davinvi_query_executor, model_editor=InContextNaiveModelEditor(davinvi_query_executor))
-    evaluator = Evaluator(query_executor=query_executor, model_editor=rome_editor)
-    # recently_modified_facts = construct_recently_modified_benchmark(200)
-    fake_facts = construct_fake_dataset_based_on_top_views_file(100)
+    evaluator = Evaluator(query_executor=query_executor, model_editor=model_editor)
+    dataset = Dataset.from_file(dataset_path)
 
     precisions_json = dict()
     num_of_examples = 100
+
+    examples_for_eval = dataset.sample(num_of_examples)
+    eval_size = len(examples_for_eval)
+
     succeeded_edits = defaultdict(lambda: 0)
     average_precision = defaultdict(lambda: 0)
     average_executed = defaultdict(lambda: 0)
     average_size = defaultdict(lambda: 0)
     total_checked_examples = defaultdict(lambda: 0)
     executed_portion_dict = defaultdict(lambda: 0)
-    for i, example in enumerate(fake_facts.sample(num_of_examples)):
-        if i % 5 == 0:
-            print(f'{i+1}/{num_of_examples}')
+
+    for i, example in enumerate(examples_for_eval):
+        if (i+1) % 10 == 0:
+            print(f'{i+1}/{eval_size}')
 
         davinvci_query_executor.clean_editing_prompt()
         evaluation_results = evaluator.evaluate(example)
 
         for axis, results in evaluation_results.items():
             precision, executed, size, edit_succeeded = results
+            if executed == 0.0:
+                continue
             if edit_succeeded:
                 succeeded_edits[axis] += 1
             average_precision[axis] += precision
@@ -122,12 +134,12 @@ if __name__ == '__main__':
         average_executed[axis] /= total_checked_examples[axis]
         average_size[axis] /= total_checked_examples[axis]
         print(f'Results of axis {axis}:')
-        print(f'{(succeeded_edits[axis]  / num_of_examples)*100} successful edits (out of {num_of_examples})')
+        print(f'{(succeeded_edits[axis]  / eval_size)*100} successful edits (out of {eval_size})')
         print(f'Average making-up precision is {average_precision[axis] }')
         print(f'Average portion of executed_tests is {average_executed[axis] }')
         print(f'Average total number of tests is {average_size[axis] }')
 
-    for axis, total in executed_portion_dict:
+    for axis, total in executed_portion_dict.items():
         print(f'{axis}: {total / total_checked_examples}')
 
-    add_to_json(d=precisions_json, path='./results_data/some_consistency_results.json')
+    add_to_json(d=precisions_json, path='./results_data/results.json')

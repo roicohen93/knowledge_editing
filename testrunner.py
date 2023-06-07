@@ -1,6 +1,7 @@
 from enum import Enum, auto
 
 from benchmark import RecentlyAddedExample, CounterFactualExample
+from testcase import TestCase
 
 
 class TestResult(Enum):

@@ -173,8 +173,10 @@ class RelationalConstraints:
 
     def is_dead_now(self):
         self.empty_conditions()
+        is_alive_strs = ['yes', 'correct', 'true', 'is alive', 'is not dead']
+        is_dead_strs = ['no', 'incorrect', 'false', 'is not alive', 'is dead']
         return TestCase(
-            test_query=Query(self.subject_id, Relation.IS_ALIVE, ['yes', 'correct', 'true', 'is not alive', 'is_dead']),
+            test_query=Query(self.subject_id, Relation.IS_ALIVE, is_dead_strs),
             condition_queries=self.conditions
         )
 
