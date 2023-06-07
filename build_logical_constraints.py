@@ -109,7 +109,7 @@ class RelationalConstraints:
         )
 
     def mother_or_father_child(self):
-        self.empty_condition()
+        self.empty_conditions()
         mother = self._targets(Relation.MOTHER)[0]
         father = self._targets(Relation.FATHER)[0]
 
@@ -125,7 +125,7 @@ class RelationalConstraints:
         )
 
     def mother_or_father_of_new_sibling(self):
-        self.empty_condition()
+        self.empty_conditions()
         mother = self._targets(Relation.MOTHER)[0]
         father = self._targets(Relation.FATHER)[0]
 
@@ -195,7 +195,7 @@ class RelationalConstraints:
         )
 
     def continent(self):
-        self.empty_condition()
+        self.empty_conditions()
         country_associated_with = self._edited_targets_only(Relation.COUNTRY)
         if country_associated_with is None:
             country_associated_with = self._edited_targets_only(Relation.CAPITAL_OF)
@@ -206,7 +206,7 @@ class RelationalConstraints:
         )
 
     def currency(self):
-        self.empty_condition()
+        self.empty_conditions()
         country_associated_with = self._edited_targets_only(Relation.COUNTRY)
         if country_associated_with is None:
             country_associated_with = self._edited_targets_only(Relation.CAPITAL_OF)
@@ -217,7 +217,7 @@ class RelationalConstraints:
         )
 
     def official_language(self):
-        self.empty_condition()
+        self.empty_conditions()
         country_associated_with = self._edited_targets_only(Relation.COUNTRY)
         if country_associated_with is None:
             country_associated_with = self._edited_targets_only(Relation.CAPITAL_OF)
@@ -228,7 +228,7 @@ class RelationalConstraints:
         )
 
     def likely_anthem(self):
-        self.empty_condition()
+        self.empty_conditions()
         country_associated_with = self._edited_targets_only(Relation.COUNTRY)
         if country_associated_with is None:
             country_associated_with = self._edited_targets_only(Relation.CAPITAL_OF)
