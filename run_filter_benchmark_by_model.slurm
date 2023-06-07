@@ -14,4 +14,4 @@
 
 export TRANSFORMERS_CACHE=/home/joberant/home/roi1/hf_cache
 
-python filter_benchmark_by_model.py ./benchmark/top_views.json gpt-j ./benchmark/filtered/gpt-j.json
+python filter_benchmark_by_model.py ./benchmark/top_views_1000.json gpt-j ./benchmark/filtered/gpt-j_1000.json
