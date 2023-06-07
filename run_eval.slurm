@@ -10,7 +10,7 @@
 #SBATCH --ntasks=1
 #SBATCH --mem=50000
 #SBATCH --gpus=1
-#SBATCH --constraint=tesla_v100|quadro_rtx_8000
+#SBATCH --constraint=quadro_rtx_8000
 
 export TRANSFORMERS_CACHE=/home/joberant/home/roi1/hf_cache
 
