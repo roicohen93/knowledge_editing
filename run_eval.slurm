@@ -1,6 +1,6 @@
 #! /bin/sh
 
-#SBATCH --job-name=gpt2_100
+#SBATCH --job-name=gptj_100
 #SBATCH --output=./gptj_100_out.txt
 #SBATCH --error=./gptj_100_err.txt
 #SBATCH --partition=killable
