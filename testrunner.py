@@ -23,7 +23,7 @@ class TestRunner:
         self._query_executor = query_executor
         self._model_editor = model_editor
 
-    def run_testcases(self, example, test_cases, skip_preconditions=False):
+    def run_testcases(self, example, test_cases, skip_edit=False, skip_restore=False, skip_preconditions=False):
         example_result = ExampleResult.EXECUTED
         test_results = {TestResult.NOT_EXECUTED: [], TestResult.PASSED: [], TestResult.FAILED: []}
 
@@ -47,7 +47,8 @@ class TestRunner:
             return example_result, test_results
 
         # Modify model
-        self._model_editor.edit_model(example.fact)
+        if not skip_edit:
+            self._model_editor.edit_model(example.fact)
 
         # Test edit
         if not self._query_executor.execute_query(example.fact.get_fact_query()):
@@ -66,7 +67,8 @@ class TestRunner:
                     test_results[TestResult.FAILED].append(test_case)
 
         # Restore model
-        self._model_editor.restore_model()
+        if not skip_restore:
+            self._model_editor.restore_model()
 
         return example_result, test_results
 
