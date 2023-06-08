@@ -1,10 +1,10 @@
 import json
 import os
+import functools
 from collections import defaultdict
 from qwikidata.linked_data_interface import get_entity_dict_from_api
 from qwikidata.entity import WikidataItem
 from qwikidata.sparql import return_sparql_query_results
-
 
 
 def load_json(path: str):
@@ -67,6 +67,7 @@ def facts_list_to_relation2targets(facts: list):
     return relation2targets
 
 
+@functools.lru_cache()
 def wikidata_item_given_id(ent_id: str):
     try:
         return WikidataItem(get_entity_dict_from_api(ent_id))
