@@ -27,7 +27,7 @@ def get_relation2optional_targets(wikidata_dir: str):
 if __name__ == '__main__':
     wikidata_dir = './wikidata_full_kg/filtered_relations'
     relation2optional_targets = get_relation2optional_targets(wikidata_dir)
-    with open('./relation2optional_targets.json', 'w+', encoding='utf-8') as f:
+    with open('./relation2optional_targets_new.json', 'w+', encoding='utf-8') as f:
         json.dump(relation2optional_targets, f)
     print(relation2optional_targets.keys())
     print(len(relation2optional_targets))

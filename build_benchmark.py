@@ -243,7 +243,7 @@ if __name__ == '__main__':
     # for example in dataset.sample(5):
     #     print(example)
 
-    top_views_size = 400
+    top_views_size = 2
     top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=top_views_size, limit_num_of_facts=10, limit_subjects=100000)
     top_views_benchmark.to_file(f'./benchmark/top_views_{top_views_size}.json')
 

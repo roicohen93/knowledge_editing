@@ -146,7 +146,7 @@ if __name__ == '__main__':
         average_size[axis] /= total_checked_examples[axis]
 
         print(f'{(succeeded_edits[axis]  / eval_size)*100} successful edits (out of {eval_size})')
-        print(f'Average making-up precision is {average_precision[axis] }')
+        print(f'Average accuracy is {average_precision[axis] }')
         print(f'Average portion of executed_tests is {average_executed[axis] }')
         print(f'Average total number of tests is {average_size[axis] }')
 

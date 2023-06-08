@@ -1,14 +1,17 @@
+from relation import Relation
 
-checkable_relations = [
-    'capital of',
-    'capital',
-    'mother',
-    'father',
-    # 'occupation',
-    'official language',
-    'place of burial',
-    'place of death',
-]
+# checkable_relations = [
+#     'capital of',
+#     'capital',
+#     'mother',
+#     'father',
+#     # 'occupation',
+#     'official language',
+#     'place of burial',
+#     'place of death',
+# ]
+
+checkable_relations = [relation.formal_name() for relation in Relation]
 
 interesting_relations = [
         "position held",
