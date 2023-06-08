@@ -78,7 +78,7 @@ def construct_fake_edits_benchmark(facts: list):
     dataset_list = []
     cnt = 0
     for subject_id, relation, target_id in facts:
-        relation2optional_targets = load_json('./wikidata/relation2optional_targets.json')
+        relation2optional_targets = load_json('./wikidata/relation2optional_targets_new.json')
         relation_formal_name = relation.formal_name()
         if relation_formal_name not in relation2optional_targets:
             continue
@@ -243,14 +243,14 @@ if __name__ == '__main__':
     # for example in dataset.sample(5):
     #     print(example)
 
-    top_views_size = 2
+    top_views_size = 1000
     top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=top_views_size, limit_num_of_facts=10, limit_subjects=100000)
-    top_views_benchmark.to_file(f'./benchmark/top_views_{top_views_size}.json')
+    top_views_benchmark.to_file(f'./benchmark/final/top_views_{top_views_size}.json')
 
     # fake_size = 2000
     # fake_benchmark = construct_fake_dataset_based_on_top_views_file(limit=fake_size, limit_num_of_facts=10,
     #                                                            limit_subjects=100000)
-    # fake_benchmark.to_file(f'./benchmark/fake_{fake_size}.json')
+    # fake_benchmark.to_file(f'./benchmark/final/fake_{fake_size}.json')
 
 
 
