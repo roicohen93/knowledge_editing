@@ -59,14 +59,24 @@ class RelationalConstraints:
         )
 
     def mothers_child(self):
-        mother = self._targets(Relation.MOTHER)[0]
+        mother = self._targets(Relation.MOTHER)
+
+        if mother:
+            mother = mother[0]
+        else:
+            return None
+
         return TestCase(
             test_query=Query(mother, Relation.CHILD, [self.subject_id]),
             condition_queries=[]
         )
 
     def fathers_child(self):
-        father = self._targets(Relation.FATHER)[0]
+        father = self._targets(Relation.FATHER)
+        if father:
+            father = father[0]
+        else:
+            return None
         return TestCase(
             test_query=Query(father, Relation.CHILD, [self.subject_id]),
             condition_queries=[]
@@ -92,7 +102,13 @@ class RelationalConstraints:
 
     def mothers_number_of_children(self):
         self.empty_conditions()
-        mother = self._targets(Relation.MOTHER)[0]
+        mother = self._targets(Relation.MOTHER)
+
+        if mother:
+            mother = mother[0]
+        else:
+            return None
+
         num_children = len(self._targets_of([mother], Relation.CHILD))
         return TestCase(
             test_query=Query(mother, Relation.NUMBER_OF_CHILDREN, num_children + 1),
@@ -101,7 +117,13 @@ class RelationalConstraints:
 
     def fathers_number_of_children(self):
         self.empty_conditions()
-        father = self._targets(Relation.FATHER)[0]
+        father = self._targets(Relation.FATHER)
+
+        if father:
+            father = father[0]
+        else:
+            return None
+
         num_children = len(self._targets_of([father], Relation.CHILD))
         return TestCase(
             test_query=Query(father, Relation.NUMBER_OF_CHILDREN, num_children + 1),
@@ -110,8 +132,16 @@ class RelationalConstraints:
 
     def mother_or_father_child(self):
         self.empty_conditions()
-        mother = self._targets(Relation.MOTHER)[0]
+        mother = self._targets(Relation.MOTHER)
+        if mother:
+            mother = mother[0]
+        else:
+            return None
         father = self._targets(Relation.FATHER)[0]
+        if father:
+            father = father[0]
+        else:
+            return None
 
         new_sibling = self._edited_targets_only(Relation.SIBLING)
         if new_sibling is None:
@@ -126,8 +156,16 @@ class RelationalConstraints:
 
     def mother_or_father_of_new_sibling(self):
         self.empty_conditions()
-        mother = self._targets(Relation.MOTHER)[0]
+        mother = self._targets(Relation.MOTHER)
+        if mother:
+            mother = mother[0]
+        else:
+            return None
         father = self._targets(Relation.FATHER)[0]
+        if father:
+            father = father[0]
+        else:
+            return None
 
         new_sibling = self._edited_targets_only(Relation.SIBLING)
         if new_sibling is None:
@@ -241,68 +279,74 @@ class RelationalConstraints:
         )
 
 
+def add_test(tests, test):
+    if test is None:
+        return
+    tests.append(test)
+
+
 def generate_constraints(subject_id: str, relation: Relation, new_target_id: str):
     tests = []
     constraints = RelationalConstraints(subject_id, {relation: [new_target_id]})
 
     if relation == Relation.MOTHER:
-        tests.append(constraints.sibling())
-        tests.append(constraints.uncle())
-        tests.append(constraints.aunt())
-        tests.append(constraints.mothers_child())
-        tests.append(constraints.mothers_number_of_children())
+        add_test(tests, constraints.sibling())
+        add_test(tests, constraints.uncle())
+        add_test(tests, constraints.aunt())
+        add_test(tests, constraints.mothers_child())
+        add_test(tests, constraints.mothers_number_of_children())
 
     if relation == Relation.FATHER:
-        tests.append(constraints.sibling())
-        tests.append(constraints.uncle())
-        tests.append(constraints.aunt())
-        tests.append(constraints.fathers_child())
-        tests.append(constraints.fathers_number_of_children())
+        add_test(tests, constraints.sibling())
+        add_test(tests, constraints.uncle())
+        add_test(tests, constraints.aunt())
+        add_test(tests, constraints.fathers_child())
+        add_test(tests, constraints.fathers_number_of_children())
 
     if relation == Relation.BROTHER:
-        tests.append(constraints.mother_or_father_child())
-        tests.append(constraints.mother_or_father_of_new_sibling())
-        tests.append(constraints.sibling_of_new_sibling())
+        add_test(tests, constraints.mother_or_father_child())
+        add_test(tests, constraints.mother_or_father_of_new_sibling())
+        add_test(tests, constraints.sibling_of_new_sibling())
 
     if relation == Relation.SISTER:
-        tests.append(constraints.mother_or_father_child())
-        tests.append(constraints.mother_or_father_of_new_sibling())
-        tests.append(constraints.sibling_of_new_sibling())
+        add_test(tests, constraints.mother_or_father_child())
+        add_test(tests, constraints.mother_or_father_of_new_sibling())
+        add_test(tests, constraints.sibling_of_new_sibling())
 
     if relation == Relation.SIBLING:
-        tests.append(constraints.mother_or_father_child())
-        tests.append(constraints.mother_or_father_of_new_sibling())
-        tests.append(constraints.sibling_of_new_sibling())
+        add_test(tests, constraints.mother_or_father_child())
+        add_test(tests, constraints.mother_or_father_of_new_sibling())
+        add_test(tests, constraints.sibling_of_new_sibling())
 
     if relation == Relation.SPOUSE:
-        tests.append(constraints.spouse_of_new_spouse())
+        add_test(tests, constraints.spouse_of_new_spouse())
 
     if relation == Relation.PLACE_OF_DEATH:
-        tests.append(constraints.is_dead_now())
+        add_test(tests, constraints.is_dead_now())
 
     if relation == Relation.PLACE_OF_BURIAL:
-        tests.append(constraints.is_dead_now())
+        add_test(tests, constraints.is_dead_now())
 
     if relation == Relation.DATE_OF_DEATH:
-        tests.append(constraints.is_dead_now())
+        add_test(tests, constraints.is_dead_now())
 
     if relation == Relation.FOLLOWS:
-        tests.append(constraints.new_followed_by())
+        add_test(tests, constraints.new_followed_by())
 
     if relation == Relation.FOLLOWED_BY:
-        tests.append(constraints.new_follows())
+        add_test(tests, constraints.new_follows())
 
     if relation == Relation.COUNTRY:
-        tests.append(constraints.continent())
-        tests.append(constraints.currency())
-        tests.append(constraints.official_language())
-        tests.append(constraints.likely_anthem())
+        add_test(tests, constraints.continent())
+        add_test(tests, constraints.currency())
+        add_test(tests, constraints.official_language())
+        add_test(tests, constraints.likely_anthem())
 
     if relation == Relation.CAPITAL_OF:
-        tests.append(constraints.continent())
-        tests.append(constraints.currency())
-        tests.append(constraints.official_language())
-        tests.append(constraints.likely_anthem())
+        add_test(tests, constraints.continent())
+        add_test(tests, constraints.currency())
+        add_test(tests, constraints.official_language())
+        add_test(tests, constraints.likely_anthem())
 
     return tests
 
