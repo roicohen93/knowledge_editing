@@ -226,9 +226,9 @@ if __name__ == '__main__':
     # counterfactuals_dataset = construct_counterfactuaals_benchmark()
     # print(counterfactuals_dataset.sample(5)[0])
 
-    recently_modified_size = 2000
-    recently_modified_benchmark = construct_recently_modified_benchmark(recently_modified_size)
-    recently_modified_benchmark.to_file(f'./benchmark/final/recently_modified_{recently_modified_size}.json')
+    # recently_modified_size = 2000
+    # recently_modified_benchmark = construct_recently_modified_benchmark(recently_modified_size)
+    # recently_modified_benchmark.to_file(f'./benchmark/final/recently_modified_{recently_modified_size}.json')
 
     # for example in recently_modified_facts.sample(5):
     #     if example.fact._relation == Relation.MOTHER or example.fact._relation == Relation.FATHER:
@@ -247,10 +247,12 @@ if __name__ == '__main__':
     # top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=top_views_size, limit_num_of_facts=10, limit_subjects=100000)
     # top_views_benchmark.to_file(f'./benchmark/final/top_views_{top_views_size}.json')
 
-    # fake_size = 2000
-    # fake_benchmark = construct_fake_dataset_based_on_top_views_file(limit=fake_size, limit_num_of_facts=10,
-    #                                                            limit_subjects=100000)
-    # fake_benchmark.to_file(f'./benchmark/final/fake_{fake_size}.json')
+    fake_size = 2000
+    fake_benchmark = construct_fake_dataset_based_on_sampled_buckets(
+        path='./generations/sampled_entities_divided_to_buckets_5000.json',
+        limit=fake_size, limit_num_of_facts=10, limit_subjects=100000
+    )
+    fake_benchmark.to_file(f'./benchmark/final/fake_{fake_size}.json')
 
 
 
