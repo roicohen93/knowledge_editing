@@ -159,7 +159,7 @@ def sample_relevant_facts_given_list_of_subjects(subjects: list, number_of_facts
     return facts
 
 
-def construct_fake_dataset_based_on_top_views_file(limit: int = None,
+def construct_fake_dataset_based_on_top_views_file(limit: int = None, facts_limit: int = None,
                                                    limit_subjects: int = None, limit_num_of_facts: int = None):
     subjects_json = load_json('./wikidata/top_entities_by_views_monthly.json')
     subject_list = []
@@ -170,17 +170,18 @@ def construct_fake_dataset_based_on_top_views_file(limit: int = None,
         subject_ids = random.sample(subject_ids, min(limit_subjects, len(subject_ids)))
     print('extracting facts..')
     if limit_num_of_facts is None:
-        all_relevant_facts = all_relevant_facts_given_list_of_subjects(subject_ids, limit)
+        all_relevant_facts = all_relevant_facts_given_list_of_subjects(subject_ids, facts_limit)
     else:
-        all_relevant_facts = sample_relevant_facts_given_list_of_subjects(subject_ids, limit_num_of_facts, limit)
+        all_relevant_facts = sample_relevant_facts_given_list_of_subjects(subject_ids, limit_num_of_facts, facts_limit)
     print(f'have got {len(all_relevant_facts)} relevant facts to sample from')
     print('building dataset..')
     random.shuffle(all_relevant_facts)
+    all_relevant_facts = random.sample(all_relevant_facts, min(limit, len(all_relevant_facts)))
     dataset = construct_fake_edits_benchmark(all_relevant_facts)
     return dataset
 
 
-def construct_fake_dataset_based_on_sampled_buckets(path: str, limit: int = None,
+def construct_fake_dataset_based_on_sampled_buckets(path: str, limit: int, facts_limit: int = None,
                                                    limit_subjects: int = None, limit_num_of_facts: int = None):
     subjects_json = load_json(path)
     subject_list = []
@@ -191,12 +192,13 @@ def construct_fake_dataset_based_on_sampled_buckets(path: str, limit: int = None
         subject_ids = random.sample(subject_ids, min(limit_subjects, len(subject_ids)))
     print('extracting facts..')
     if limit_num_of_facts is None:
-        all_relevant_facts = all_relevant_facts_given_list_of_subjects(subject_ids, limit)
+        all_relevant_facts = all_relevant_facts_given_list_of_subjects(subject_ids, facts_limit)
     else:
-        all_relevant_facts = sample_relevant_facts_given_list_of_subjects(subject_ids, limit_num_of_facts, limit)
+        all_relevant_facts = sample_relevant_facts_given_list_of_subjects(subject_ids, limit_num_of_facts, facts_limit)
     print(f'have got {len(all_relevant_facts)} relevant facts to sample from')
     print('building dataset..')
     random.shuffle(all_relevant_facts)
+    all_relevant_facts = random.sample(all_relevant_facts, min(limit, len(all_relevant_facts)))
     dataset = construct_fake_edits_benchmark(all_relevant_facts)
     return dataset
         
@@ -243,16 +245,18 @@ if __name__ == '__main__':
     # for example in dataset.sample(5):
     #     print(example)
 
-    # top_views_size = 1000
-    # top_views_benchmark = construct_fake_dataset_based_on_top_views_file(limit=top_views_size, limit_num_of_facts=10, limit_subjects=100000)
-    # top_views_benchmark.to_file(f'./benchmark/final/top_views_{top_views_size}.json')
-
-    fake_size = 2000
-    fake_benchmark = construct_fake_dataset_based_on_sampled_buckets(
-        path='./generations/sampled_entities_divided_to_buckets_5000.json',
-        limit=fake_size, limit_num_of_facts=10, limit_subjects=100000
+    top_views_size = 1000
+    top_views_benchmark = construct_fake_dataset_based_on_top_views_file(
+        limit=top_views_size, facts_limit=10000, limit_num_of_facts=3, limit_subjects=100000
     )
-    fake_benchmark.to_file(f'./benchmark/final/fake_{fake_size}.json')
+    top_views_benchmark.to_file(f'./benchmark/final/top_views_{top_views_size}.json')
+
+    # fake_size = 2000
+    # fake_benchmark = construct_fake_dataset_based_on_sampled_buckets(
+    #     path='./generations/sampled_entities_divided_to_buckets_5000.json',
+    #     limit=fake_size, facts_limit=15000, limit_num_of_facts=4, limit_subjects=100000
+    # )
+    # fake_benchmark.to_file(f'./benchmark/final/fake_{fake_size}.json')
 
 
 
