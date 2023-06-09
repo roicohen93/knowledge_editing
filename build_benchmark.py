@@ -245,18 +245,18 @@ if __name__ == '__main__':
     # for example in dataset.sample(5):
     #     print(example)
 
-    top_views_size = 1000
-    top_views_benchmark = construct_fake_dataset_based_on_top_views_file(
-        limit=top_views_size, facts_limit=10000, limit_num_of_facts=3, limit_subjects=100000
-    )
-    top_views_benchmark.to_file(f'./benchmark/final/top_views_{top_views_size}.json')
-
-    # fake_size = 2000
-    # fake_benchmark = construct_fake_dataset_based_on_sampled_buckets(
-    #     path='./generations/sampled_entities_divided_to_buckets_5000.json',
-    #     limit=fake_size, facts_limit=15000, limit_num_of_facts=4, limit_subjects=100000
+    # top_views_size = 1000
+    # top_views_benchmark = construct_fake_dataset_based_on_top_views_file(
+    #     limit=top_views_size, facts_limit=10000, limit_num_of_facts=3, limit_subjects=100000
     # )
-    # fake_benchmark.to_file(f'./benchmark/final/fake_{fake_size}.json')
+    # top_views_benchmark.to_file(f'./benchmark/final/top_views_{top_views_size}.json')
+
+    fake_size = 2000
+    fake_benchmark = construct_fake_dataset_based_on_sampled_buckets(
+        path='./generations/sampled_entities_divided_to_buckets_5000.json',
+        limit=fake_size, facts_limit=15000, limit_num_of_facts=4, limit_subjects=100000
+    )
+    fake_benchmark.to_file(f'./benchmark/final/fake_{fake_size}.json')
 
 
 
