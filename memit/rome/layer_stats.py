@@ -4,7 +4,7 @@ from pathlib import Path
 import torch
 from datasets import load_dataset
 from tqdm.auto import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, GPTNeoXForCausalLM, LlamaForCausalLM
 
 from util.globals import *
 from util.nethook import Trace, set_requires_grad
@@ -96,16 +96,22 @@ def layer_stats(
     def get_ds():
         raw_ds = load_dataset(
             ds_name,
-            dict(wikitext="wikitext-103-raw-v1", wikipedia="20200501.en")[ds_name],
+            dict(wikitext="wikitext-103-raw-v1", wikipedia="20220301.en")[ds_name],
         )
-        maxlen = model.config.n_positions
+        if isinstance(model, LlamaForCausalLM) or isinstance(model, GPTNeoXForCausalLM):
+            maxlen = model.config.max_position_embeddings
+        else:
+            maxlen = model.config.n_positions
         if batch_tokens is not None and batch_tokens < maxlen:
             maxlen = batch_tokens
         return TokenizedDataset(raw_ds["train"], tokenizer, maxlen=maxlen)
 
     # Continue with computation of statistics
     batch_size = 100  # Examine this many dataset texts at once
-    npos = model.config.n_positions
+    if isinstance(model, LlamaForCausalLM) or isinstance(model, GPTNeoXForCausalLM):
+        npos = model.config.max_position_embeddings
+    else:
+        npos = model.config.n_positions
     if batch_tokens is None:
         batch_tokens = npos * 3  # Sort and divide into batches with this many tokens
     if precision is None:

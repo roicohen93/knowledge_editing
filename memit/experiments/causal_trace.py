@@ -9,7 +9,7 @@ import torch
 from datasets import load_dataset
 from matplotlib import pyplot as plt
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, LlamaTokenizer, LlamaTokenizerFast
 
 from dsets import KnownsDataset
 from rome.tok_dataset import (
@@ -47,6 +47,7 @@ def main():
             "gpt2-large",
             "gpt2-medium",
             "gpt2",
+            "llama-7b"
         ],
     )
     aa("--fact_file", default=None)
@@ -460,20 +461,30 @@ class ModelAndTokenizer:
     ):
         if tokenizer is None:
             assert model_name is not None
-            tokenizer = AutoTokenizer.from_pretrained(model_name)
+            if 'llama' in model_name:
+                tokenizer = AutoTokenizer.from_pretrained(f'huggyllama/{model_name}', use_fast=False, add_bos_token=False, clean_up_tokenization_spaces=True)
+            else:
+                tokenizer = AutoTokenizer.from_pretrained(model_name)
         if model is None:
             assert model_name is not None
-            model = AutoModelForCausalLM.from_pretrained(
-                model_name, low_cpu_mem_usage=low_cpu_mem_usage, torch_dtype=torch_dtype
-            )
+            if 'llama' in model_name:
+                model = AutoModelForCausalLM.from_pretrained(
+                    f'huggyllama/{model_name}', device_map="auto", offload_folder="offload", offload_state_dict=True, torch_dtype=torch_dtype
+                )
+            else:
+                model = AutoModelForCausalLM.from_pretrained(
+                    model_name, low_cpu_mem_usage=low_cpu_mem_usage, torch_dtype=torch_dtype
+                )
             nethook.set_requires_grad(False, model)
-            model.eval().cuda()
+            model.eval()
+            if 'llama' not in model_name:
+                model.cuda()
         self.tokenizer = tokenizer
         self.model = model
         self.layer_names = [
             n
             for n, m in model.named_modules()
-            if (re.match(r"^(transformer|gpt_neox)\.(h|layers)\.\d+$", n))
+            if (re.match(r"^(transformer|gpt_neox|model)\.(h|layers)\.\d+$", n))
         ]
         self.num_layers = len(self.layer_names)
 
@@ -496,6 +507,12 @@ def layername(model, num, kind=None):
         if kind == "attn":
             kind = "attention"
         return f'gpt_neox.layers.{num}{"" if kind is None else "." + kind}'
+    if hasattr(model, "model"):
+        if kind == "embed":
+            return "model.embed_tokens"
+        if kind == "attn":
+            kind = "self_attn"
+        return f'model.layers.{num}{"" if kind is None else "." + kind}'
     assert False, "unknown transformer structure"
 
 
@@ -610,6 +627,9 @@ def make_inputs(tokenizer, prompts, device="cuda"):
 def decode_tokens(tokenizer, token_array):
     if hasattr(token_array, "shape") and len(token_array.shape) > 1:
         return [decode_tokens(tokenizer, row) for row in token_array]
+    if isinstance(tokenizer, LlamaTokenizer) or isinstance(tokenizer, LlamaTokenizerFast):
+        s = [x.replace('▁', ' ') for x in tokenizer.convert_ids_to_tokens(token_array)]
+        return [s[0][1:]] + s[1:]
     return [tokenizer.decode([t]) for t in token_array]
 
 

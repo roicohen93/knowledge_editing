@@ -1,3 +1,4 @@
+import transformers
 import unicodedata
 from typing import List, Optional
 
@@ -74,6 +75,28 @@ def generate_interactive(
         print()
 
 
+def generate_for_llama(model, tok, prompts, top_k, max_out_len):
+    txt = []
+    for prompt in prompts:
+        prompt = prompt.replace('<|endoftext|>', '</s>')
+        inputs = tok.encode(prompt, return_tensors='pt').to(next(model.parameters()).device)
+        outputs = model.generate(inputs, do_sample=True, top_k=top_k, max_length=max_out_len)
+        txt.append(tok.decode(outputs[0]))
+
+    txt = [
+        unicodedata.normalize("NFKD", x)
+        .replace("\n\n", " ")
+        .replace("</s>", "")
+        .replace("<s>", "")
+        # .replace("{", "")
+        # .replace("}", "")
+        # .strip()
+        for x in txt
+    ]
+
+    return txt
+
+
 def generate_fast(
     model: AutoModelForCausalLM,
     tok: AutoTokenizer,
@@ -89,6 +112,10 @@ def generate_fast(
 
     # Unroll prompts and tokenize
     inp = [prompt for prompt in prompts for _ in range(n_gen_per_prompt)]
+
+    if isinstance(model, transformers.LlamaForCausalLM):
+        return generate_for_llama(model, tok, inp, top_k, max_out_len)
+
     inp_tok = tok(inp, padding=True, return_tensors="pt").to(
         next(model.parameters()).device
     )

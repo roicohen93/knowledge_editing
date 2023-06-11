@@ -113,7 +113,7 @@ class LlamaQueryExecutor(HFQueryExecutor):
         self._model_size = model_size
         self._model_name = f'llama-{self._model_size}'
         if tokenizer is None:
-            tokenizer = AutoTokenizer.from_pretrained(f'huggyllama/{self._model_name}')
+            tokenizer = AutoTokenizer.from_pretrained(f'huggyllama/{self._model_name}', use_fast=False, add_bos_token=False)
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
             model = LlamaForCausalLM.from_pretrained(f'huggyllama/{self._model_name}', device_map="auto", offload_folder="offload", offload_state_dict=True)

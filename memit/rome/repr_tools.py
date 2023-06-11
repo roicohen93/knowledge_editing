@@ -7,7 +7,7 @@ from copy import deepcopy
 from typing import List
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM, LlamaTokenizer, LlamaTokenizerFast
 
 from util import nethook
 
@@ -73,9 +73,17 @@ def get_words_idxs_in_templates(
     assert len(prefixes) == len(words) == len(suffixes)
     n = len(prefixes)
     batch_tok = tok([*prefixes, *words, *suffixes])
+
+    batch_tok = batch_tok['input_ids']
+
     prefixes_tok, words_tok, suffixes_tok = [
         batch_tok[i : i + n] for i in range(0, n * 3, n)
     ]
+
+    if isinstance(tok, LlamaTokenizer) or isinstance(tok, LlamaTokenizerFast):
+        words_tok = [tokens[1:] if tokens[0] == 29871 else tokens for tokens in words_tok]
+        suffixes_tok = [tokens[1:] if tokens[0] == 29871 else tokens for tokens in suffixes_tok]
+
     prefixes_len, words_len, suffixes_len = [
         [len(el) for el in tok_list]
         for tok_list in [prefixes_tok, words_tok, suffixes_tok]
@@ -136,6 +144,10 @@ def get_reprs_at_idxs(
         contexts_tok = tok(batch_contexts, padding=True, return_tensors="pt").to(
             next(model.parameters()).device
         )
+
+        if isinstance(model, LlamaForCausalLM):
+            if 'token_type_ids' in contexts_tok:
+                del contexts_tok['token_type_ids']
 
         with torch.no_grad():
             with nethook.Trace(

@@ -96,4 +96,5 @@ def flatten_masked_batch(data, mask):
     """
     flat_data = data.view(-1, data.size(-1))
     attended_tokens = mask.view(-1).nonzero()[:, 0]
+    attended_tokens = attended_tokens.to(flat_data.device)
     return flat_data[attended_tokens]
