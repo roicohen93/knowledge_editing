@@ -1,6 +1,3 @@
-[submodule "rome"]
-	path = rome
-	url = https://github.com/kmeng01/rome.git
 [submodule "memit"]
 	path = memit
 	url = https://github.com/kmeng01/memit.git
