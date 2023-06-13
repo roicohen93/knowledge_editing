@@ -86,6 +86,11 @@ class Relation(Enum):
         return self._relation_id
 
     def phrase(self, subject):
+        if isinstance(subject, list):
+            if subject:
+                subject = subject[0]
+            else:
+                return self._phrase
         return self._phrase.replace('<subject>', subject)
 
     def evaluate(self, subject):

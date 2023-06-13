@@ -12,6 +12,8 @@
 #SBATCH --gpus=1
 #SBATCH --constraint=quadro_rtx_8000
 
+export HF_HOME=/home/joberant/home/roi1/hf_cache
 export TRANSFORMERS_CACHE=/home/joberant/home/roi1/hf_cache
+export HF_DATASETS_CACHE=/home/joberant/home/roi1/datasets_cache
 
 python evaluation.py
