@@ -100,7 +100,7 @@ class GPTNeoXQueryExecutor(HFQueryExecutor):
             tokenizer = AutoTokenizer.from_pretrained('EleutherAI/gpt-neox-20b')
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
-            model = GPTNeoXForCausalLM.from_pretrained('EleutherAI/gpt-neox-20b', device_map="auto", offload_folder="offload", offload_state_dict=True, torch_dtype=torch.float16, pad_token_id=tokenizer.eos_token_id)
+            model = GPTNeoXForCausalLM.from_pretrained('EleutherAI/gpt-neox-20b', device_map="balanced_low_0", offload_folder="offload", offload_state_dict=True, torch_dtype=torch.float16, pad_token_id=tokenizer.eos_token_id)
         super().__init__(model, tokenizer, device, send_to_device=False)
 
     def get_model_name(self):
@@ -116,7 +116,7 @@ class LlamaQueryExecutor(HFQueryExecutor):
             tokenizer = AutoTokenizer.from_pretrained(f'huggyllama/{self._model_name}', use_fast=False, add_bos_token=False)
             tokenizer.pad_token = tokenizer.eos_token
         if model is None:
-            model = LlamaForCausalLM.from_pretrained(f'huggyllama/{self._model_name}', device_map="auto", offload_folder="offload", offload_state_dict=True)
+            model = LlamaForCausalLM.from_pretrained(f'huggyllama/{self._model_name}', device_map="balanced_low_0", offload_folder="offload", offload_state_dict=True)
         super().__init__(model, tokenizer, device, send_to_device=False)
 
     def get_model_name(self):
