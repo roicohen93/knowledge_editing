@@ -4,11 +4,13 @@ from benchmark import Dataset, Example, TestsAxis
 from fact import Fact
 from collections import defaultdict
 from build_benchmark import construct_recently_modified_benchmark, construct_fake_dataset_based_on_top_views_file
-from queryexecutor import GPT2QueryExecutor, GPT3QueryExecutor, GPTJQueryExecutor, GPTNeoXQueryExecutor, LlamaQueryExecutor
-from modeleditor import ROMEModelEditor, InContextNaiveModelEditor
+from queryexecutor import GPT2QueryExecutor, GPT3QueryExecutor, GPTJQueryExecutor, GPTNeoXQueryExecutor, \
+    LlamaQueryExecutor
+from modeleditor import ROMEModelEditor, InContextNaiveModelEditor, MENDModelEditor, MEMITModelEditor
 from wikidata.utils import write_json, add_to_json
 from testrunner import ExampleResult
 from collections import defaultdict
+import json
 
 
 class Evaluator:
@@ -73,81 +75,144 @@ class ConditionsEvaluator(Evaluator):
 
 
 if __name__ == '__main__':
-    model = 'gpt-neo'
-    editor = 'rome'
-    dataset_path = './benchmark/filtered/gpt-j_1000.json'
+    # SBATCH --constraint=quadro_rtx_8000|tesla_v100
+    models = [
+        # 'gpt2-medium',
+        # 'gpt2-large',
+        # 'gpt2-xl',
+        # 'gpt-j',
+        'gpt-neo',
+        # 'llama'
+    ]
 
-    davinvci_query_executor = GPT3QueryExecutor(model_size='text-davinci-003')
-    if model == 'gpt2-medium':
-        query_executor = GPT2QueryExecutor('medium')
-    if model == 'gpt2-large':
-        query_executor = GPT2QueryExecutor('large')
-    if model == 'gpt2-xl':
-        query_executor = GPT2QueryExecutor('xl')
-    if model == 'gpt-j':
-        query_executor =GPTJQueryExecutor()
-    if model == 'gpt-neo':
-        query_executor = GPTNeoXQueryExecutor()
-    if model == 'llama':
-        query_executor = LlamaQueryExecutor()
+    editors = [
+        # 'mend',
+        'rome',
+        'memit'
+    ]
 
-    if editor == 'rome':
-        model_editor = ROMEModelEditor(query_executor)
+    recently_modified_path = './benchmark/final/recently_modified_2000.json'
+    fake_facts_path = './benchmark/final/fake_2000.json'
+    top_views_path = './benchmark/final/top_views_1000.json'
 
-    # evaluator = Evaluator(query_executor=davinvi_query_executor, model_editor=InContextNaiveModelEditor(davinvi_query_executor))
-    evaluator = Evaluator(query_executor=query_executor, model_editor=model_editor)
-    dataset = Dataset.from_file(dataset_path)
+    datasets = [
+        # recently_modified_path,
+        # fake_facts_path,
+        top_views_path
+    ]
 
-    precisions_json = dict()
-    num_of_examples = 200
+    for model in models:
+        for editor in editors:
+            for dataset_path in datasets:
 
-    examples_for_eval = dataset.sample(num_of_examples)
-    eval_size = len(examples_for_eval)
+                # model = 'gpt2-xl'
+                # editor = 'mend'
+                #
+                # dataset_path = top_views_path
 
-    succeeded_edits = defaultdict(lambda: 0)
-    average_precision = defaultdict(lambda: 0)
-    average_executed = defaultdict(lambda: 0)
-    average_size = defaultdict(lambda: 0)
-    total_checked_examples = defaultdict(lambda: 0)
-    executed_portion_dict = defaultdict(lambda: 0)
+                if dataset_path == recently_modified_path:
+                    dataset_name = 'recently_modified'
+                if dataset_path == fake_facts_path:
+                    dataset_name = 'fake_facts'
+                if dataset_path == top_views_path:
+                    dataset_name = 'top_views'
 
-    for i, example in enumerate(examples_for_eval):
-        if (i+1) % 10 == 0:
-            print(f'{i+1}/{eval_size}')
+                experiment_name = f'{model}_{editor}_{dataset_name}'
+                print(experiment_name)
 
-        davinvci_query_executor.clean_editing_prompt()
-        evaluation_results = evaluator.evaluate(example)
+                davinvci_query_executor = GPT3QueryExecutor(model_size='text-davinci-003')
+                if model == 'gpt2-medium':
+                    query_executor = GPT2QueryExecutor('medium')
+                if model == 'gpt2-large':
+                    query_executor = GPT2QueryExecutor('large')
+                if model == 'gpt2-xl':
+                    query_executor = GPT2QueryExecutor('xl')
+                if model == 'gpt-j':
+                    query_executor = GPTJQueryExecutor()
+                if model == 'gpt-neo':
+                    query_executor = GPTNeoXQueryExecutor()
+                if model == 'llama':
+                    query_executor = LlamaQueryExecutor()
 
-        for axis, results in evaluation_results.items():
-            precision, executed, size, edit_succeeded = results
-            if executed == 0.0:
-                continue
-            if edit_succeeded:
-                succeeded_edits[axis] += 1
-            average_precision[axis] += precision
-            average_executed[axis] += executed
-            average_size[axis] += size
-            precisions_json[str(example.fact)] = precision
-            total_checked_examples[axis] += 1
+                if editor == 'mend':
+                    model_editor = MENDModelEditor(query_executor)
+                if editor == 'rome':
+                    model_editor = ROMEModelEditor(query_executor)
+                if editor == 'memit':
+                    model_editor = MEMITModelEditor(query_executor)
 
-        for axis in TestsAxis:
-            if axis in evaluation_results:
-                executed_portion_dict[axis] += evaluation_results[axis][1]
+                # evaluator = Evaluator(query_executor=davinvi_query_executor, model_editor=InContextNaiveModelEditor(davinvi_query_executor))
+                evaluator = Evaluator(query_executor=query_executor, model_editor=model_editor)
+                dataset = Dataset.from_file(dataset_path)
 
-    for axis in TestsAxis:
-        print(f'Results of axis {axis}:')
+                precisions_json = dict()
+                num_of_examples = 200
 
-        if total_checked_examples[axis] == 0:
-            print(f'No checked tests for this axis')
-            continue
+                examples_for_eval = dataset.sample(num_of_examples)
+                eval_size = len(examples_for_eval)
 
-        average_precision[axis] /= total_checked_examples[axis]
-        average_executed[axis] /= total_checked_examples[axis]
-        average_size[axis] /= total_checked_examples[axis]
+                succeeded_edits = defaultdict(lambda: 0)
+                average_precision = defaultdict(lambda: 0)
+                average_executed = defaultdict(lambda: 0)
+                average_size = defaultdict(lambda: 0)
+                total_checked_examples = defaultdict(lambda: 0)
+                executed_portion_dict = defaultdict(lambda: 0)
 
-        print(f'{(succeeded_edits[axis]  / eval_size)*100} successful edits (out of {eval_size})')
-        print(f'Average accuracy is {average_precision[axis] }')
-        print(f'Average portion of executed_tests is {average_executed[axis] }')
-        print(f'Average total number of tests is {average_size[axis] }')
+                for i, example in enumerate(examples_for_eval):
+                    if (i + 1) % 10 == 0:
+                        print(f'{i + 1}/{eval_size}')
 
-    add_to_json(d=precisions_json, path=f'./results_data/{model}_{editor}.json')
+                    davinvci_query_executor.clean_editing_prompt()
+
+                    try:
+                        evaluation_results = evaluator.evaluate(example)
+                    except:
+                        continue
+
+                    res_dict_for_json = dict()
+                    for axis, results in evaluation_results.items():
+                        precision, executed, size, edit_succeeded = results
+                        if executed == 0.0:
+                            continue
+                        if edit_succeeded:
+                            succeeded_edits[axis] += 1
+                        average_precision[axis] += precision
+                        res_dict_for_json[axis.name] = precision
+                        average_executed[axis] += executed
+                        average_size[axis] += size
+                        # precisions_json[str(example.fact)] = precision
+                        total_checked_examples[axis] += 1
+
+                    precisions_json[str(example.fact)] = res_dict_for_json
+
+                    for axis in TestsAxis:
+                        if axis in evaluation_results:
+                            executed_portion_dict[axis] += evaluation_results[axis][1]
+
+                res_str = ''
+                for axis in TestsAxis:
+                    print(f'Results of axis {axis}:')
+                    res_str += f'Results of axis {axis}:\n'
+
+                    if total_checked_examples[axis] == 0:
+                        print(f'No checked tests for this axis')
+                        res_str += f'No checked tests for this axis\n'
+                        continue
+
+                    average_precision[axis] /= total_checked_examples[axis]
+                    average_executed[axis] /= total_checked_examples[axis]
+                    average_size[axis] /= total_checked_examples[axis]
+
+                    print(f'{(succeeded_edits[axis] / eval_size) * 100} successful edits (out of {eval_size})')
+                    res_str += f'{(succeeded_edits[axis] / eval_size) * 100} successful edits (out of {eval_size})\n'
+                    print(f'Average accuracy is {average_precision[axis]}')
+                    res_str += f'Average accuracy is {average_precision[axis]}\n'
+                    print(f'Average portion of executed_tests is {average_executed[axis]}')
+                    res_str += f'Average portion of executed_tests is {average_executed[axis]}\n'
+                    print(f'Average total number of tests is {average_size[axis]}')
+                    res_str += f'Average total number of tests is {average_size[axis]}\n'
+
+                write_json(precisions_json, f'./{experiment_name}_res_2.json')
+
+                with open(f'./{experiment_name}_2.txt', 'w+', encoding='utf-8') as f:
+                    f.write(res_str)
