@@ -76,6 +76,11 @@ def wikidata_item_given_id(ent_id: str):
 
 
 def get_label(ent_id: str):
+    if isinstance(ent_id, list):
+        if len(ent_id) > 0:
+            ent_id = ent_id[0]
+        else:
+            return ent_id
     if ent_id[0] != 'Q':
         return ent_id
     item = wikidata_item_given_id(ent_id)

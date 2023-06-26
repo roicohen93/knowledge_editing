@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 import torch
 from matplotlib.style import context
-from transformers import AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer, LlamaForCausalLM, GPTNeoXForCausalLM
 
 from rome import repr_tools
 from util import nethook
@@ -69,7 +69,7 @@ def compute_v(
     # Set up an optimization over a latent vector that, when output at the
     # rewrite layer, i.e. hypothesized fact lookup location, will induce the
     # target token to be predicted at the final layer.
-    if isinstance(model, LlamaForCausalLM):
+    if isinstance(model, LlamaForCausalLM) or isinstance(model, GPTNeoXForCausalLM):
         delta = torch.zeros((model.config.hidden_size,), requires_grad=True, device="cuda")
     else:
         delta = torch.zeros((model.config.n_embd,), requires_grad=True, device="cuda")
@@ -84,10 +84,10 @@ def compute_v(
             if target_init is None:
                 print("Recording initial value of v*")
                 # Initial value is recorded for the clean sentence
-                target_init = cur_out[0, lookup_idxs[0]].detach().clone()
+                target_init = cur_out[0, lookup_idxs[0]].detach().clone().to('cuda')
 
             for i, idx in enumerate(lookup_idxs):
-                cur_out[i, idx, :] += delta
+                cur_out[i, idx, :] += delta.to(cur_out.device)
 
         return cur_out
 
@@ -179,6 +179,8 @@ def compute_v(
         module_template=hparams.rewrite_module_tmp,
         fact_token_strategy=hparams.fact_token,
     )
+    cur_input = cur_input.to('cuda')
+    cur_output = cur_output.to('cuda')
 
     # Solving the linear system to compute the right vector
     right_vector = (target - cur_output) / torch.dot(cur_input, left_vector)

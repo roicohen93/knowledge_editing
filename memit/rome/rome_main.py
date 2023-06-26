@@ -55,7 +55,7 @@ def apply_rome_to_model(
                     assert i == 0
                     weights_copy[w_name] = w.detach().clone()
 
-                w[...] += upd_matrix
+                w[...] += upd_matrix.to(w.device)
 
         print(f"New weights successfully inserted into {list(deltas.keys())}")
 
@@ -177,7 +177,7 @@ def execute_rome(
             upd_matrix = upd_matrix_match_shape(upd_matrix, weights[weight_name].shape)
 
             # Update model weights and record desired changes in `delta` variable
-            weights[weight_name][...] += upd_matrix
+            weights[weight_name][...] += upd_matrix.to(weights[weight_name].device)
             deltas[weight_name] = (
                 left_vector.detach(),
                 right_vector.detach(),
