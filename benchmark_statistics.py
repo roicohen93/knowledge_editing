@@ -83,11 +83,12 @@ def get_example_stats(example):
 
 
 def display_statistics(df):
+    df['avg_conditions_per_test'] = df['condition_query_count'] / df['test_count']
     print('Statistics:')
     print(df.describe().to_string())
     print('--------------------------')
     print('Relations:')
-    print(df['relation'].value_counts())
+    print(df['relation'].value_counts(normalize=True))
 
 
 def main(args):
