@@ -26,7 +26,7 @@ class Fact:
         return self._relation.phrase(get_label(self._subject_id))
 
     def get_fact_phrased(self):
-        return self._relation.phrase(get_label(self._subject_id)) + f' {get_label(self._target_id)}'
+        return self._relation.phrase(get_label(self._subject_id)) + f' {get_label(self._target_id)}.'
 
     def to_dict(self):
         return {

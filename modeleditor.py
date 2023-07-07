@@ -27,26 +27,12 @@ class InContextModelEditor(ModelEditor):
         super().__init__(query_executor)
 
     def edit_model(self, fact):
-        raise NotImplementedError()  # Override in concrete classes
+        context = fact.get_fact_phrased() + '\n'
+        print(f'In Context Editing added context: {context}')
+        self._query_executor.set_prompt_context(context)
 
     def restore_model(self):
-        raise NotImplementedError()  # Override in concrete classes
-
-
-class InContextNaiveModelEditor(InContextModelEditor):
-
-    def __init__(self, query_executor: QueryExecutor):
-        super().__init__(query_executor)
-
-    def edit_model(self, fact):
-        editing_prompt = fact.get_fact_phrased()
-        edited_executor = self._query_executor.copy()
-        edited_executor.add_to_editing_prompt(f'{editing_prompt}\n')
-        print(edited_executor.editing_prompt)
-        return edited_executor
-
-    def restore_model(self):
-        raise NotImplementedError()  # Override in concrete classes
+        self._query_executor.set_prompt_context('')
 
 
 class RomeStyleModelEditor(ModelEditor):

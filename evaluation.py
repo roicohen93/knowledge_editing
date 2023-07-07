@@ -6,7 +6,7 @@ from collections import defaultdict
 from build_benchmark import construct_recently_modified_benchmark, construct_fake_dataset_based_on_top_views_file
 from queryexecutor import GPT2QueryExecutor, GPT3QueryExecutor, GPTJQueryExecutor, GPTNeoXQueryExecutor, \
     LlamaQueryExecutor
-from modeleditor import ROMEModelEditor, InContextNaiveModelEditor, MENDModelEditor, MEMITModelEditor
+from modeleditor import ROMEModelEditor, InContextModelEditor, MENDModelEditor, MEMITModelEditor
 from wikidata.utils import write_json, add_to_json
 from testrunner import ExampleResult
 from collections import defaultdict
@@ -88,7 +88,8 @@ if __name__ == '__main__':
     editors = [
         # 'mend',
         'rome',
-        'memit'
+        # 'memit',
+        # 'in-context'
     ]
 
     recently_modified_path = './benchmark/final/recently_modified_2000.json'
@@ -140,6 +141,8 @@ if __name__ == '__main__':
                     model_editor = ROMEModelEditor(query_executor)
                 if editor == 'memit':
                     model_editor = MEMITModelEditor(query_executor)
+                if editor == 'in-context':
+                    model_editor = InContextModelEditor(query_executor)
 
                 # evaluator = Evaluator(query_executor=davinvi_query_executor, model_editor=InContextNaiveModelEditor(davinvi_query_executor))
                 evaluator = Evaluator(query_executor=query_executor, model_editor=model_editor)
@@ -162,12 +165,11 @@ if __name__ == '__main__':
                     if (i + 1) % 10 == 0:
                         print(f'{i + 1}/{eval_size}')
 
-                    davinvci_query_executor.clean_editing_prompt()
-
-                    try:
-                        evaluation_results = evaluator.evaluate(example)
-                    except:
+                    if example.fact.get_subject_label() == '' or example.fact.get_target_label() == '':
+                        print(f'Skipping example: {example.to_dict()}')
                         continue
+
+                    evaluation_results = evaluator.evaluate(example)
 
                     res_dict_for_json = dict()
                     for axis, results in evaluation_results.items():

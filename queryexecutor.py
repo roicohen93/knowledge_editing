@@ -17,6 +17,7 @@ class QueryExecutor:
                 self._model = model
         if tokenizer:
             self._tokenizer = tokenizer
+        self._prompt_context = ''
 
     def get_model(self):
         return self._model
@@ -30,8 +31,8 @@ class QueryExecutor:
     def get_device(self):
         return self._device
 
-    def get_model_name(self):
-        raise NotImplementedError()  # Override in concrete classes
+    def set_prompt_context(self, context):
+        self._prompt_context = context
 
     @staticmethod
     def _verify_answer(model_answer, correct_answer):
@@ -41,10 +42,14 @@ class QueryExecutor:
         return True
 
     def execute_query(self, query, answer_length=30):
-        prompt = query.get_query_prompt()
+        prompt = self._prompt_context + query.get_query_prompt()
         model_answer = self._generate_text(prompt, len(prompt) + answer_length)
+        model_answer = model_answer.replace(self._prompt_context, '', 1)
         print(f'query: {query.to_dict()}\nmodel answer: {model_answer}')
         return self._verify_answer(model_answer, query.get_answers())
+
+    def get_model_name(self):
+        raise NotImplementedError()  # Override in concrete classes
 
     def _generate_text(self, prompt, length):
         raise NotImplementedError()  # Override in concrete classes
@@ -126,29 +131,14 @@ class LlamaQueryExecutor(HFQueryExecutor):
 
 class GPT3QueryExecutor(QueryExecutor):
 
-    def __init__(self, model_size='text-davinci-003', editing_prompt: str = ''):
+    def __init__(self, model_size='text-davinci-003'):
         self._model_size = model_size
-        self.editing_prompt = editing_prompt
         super().__init__()
 
     def get_model_name(self):
         return self._model_size
 
-    def copy(self):
-        return GPT3QueryExecutor(self._model_size, self.editing_prompt)
-
-    def set_editing_prompt(self, prompt: str):
-        self.editing_prompt = prompt
-
-    def add_to_editing_prompt(self, text_to_add: str):
-        self.editing_prompt += text_to_add
-
-    def clean_editing_prompt(self):
-        self.editing_prompt = ''
-
     def _generate_text(self, prompt, length):
-        if self.editing_prompt:
-            prompt = f'{self.editing_prompt}{prompt}'
         text, log_probs = call_openai(
             prompt=prompt,
             model=self._model_size,
