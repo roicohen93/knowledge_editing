@@ -10,13 +10,11 @@ class QueryExecutor:
             self._device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         else:
             self._device = device
-        if model:
-            if send_to_device:
-                self._model = model.to(self._device)
-            else:
-                self._model = model
-        if tokenizer:
-            self._tokenizer = tokenizer
+        if send_to_device:
+            self._model = model.to(self._device)
+        else:
+            self._model = model
+        self._tokenizer = tokenizer
         self._prompt_context = ''
 
     def get_model(self):
@@ -133,7 +131,7 @@ class GPT3QueryExecutor(QueryExecutor):
 
     def __init__(self, model_size='text-davinci-003'):
         self._model_size = model_size
-        super().__init__()
+        super().__init__(send_to_device=False)
 
     def get_model_name(self):
         return self._model_size
