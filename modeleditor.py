@@ -55,7 +55,6 @@ class RomeStyleModelEditor(ModelEditor):
         if self._changed_weights is None:
             return
 
-        # TODO: Fixup imports
         os.chdir('./memit')
         sys.path.append('.')
         from util import nethook
@@ -74,7 +73,6 @@ class MEMITModelEditor(RomeStyleModelEditor):
         super().__init__(query_executor)
 
     def edit_model(self, fact):
-        # TODO: Fixup imports
         os.chdir('./memit')
         sys.path.append('.')
         from memit import MEMITHyperParams, apply_memit_to_model
@@ -93,7 +91,6 @@ class ROMEModelEditor(RomeStyleModelEditor):
         super().__init__(query_executor)
 
     def edit_model(self, fact):
-        # TODO: Fixup imports
         os.chdir('./memit')
         sys.path.append('.')
         from rome import ROMEHyperParams, apply_rome_to_model
@@ -112,7 +109,6 @@ class MENDModelEditor(RomeStyleModelEditor):
         super().__init__(query_executor)
 
     def edit_model(self, fact):
-        # TODO: Fixup imports
         os.chdir('./memit')
         sys.path.append('.')
         from baselines.mend import MENDHyperParams, MendRewriteExecutor

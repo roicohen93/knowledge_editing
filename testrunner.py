@@ -71,29 +71,3 @@ class TestRunner:
             self._model_editor.restore_model()
 
         return example_result, test_results
-
-
-if __name__ == '__main__':
-    from queryexecutor import GPT2QueryExecutor
-    from modeleditor import MEMITModelEditor, ROMEModelEditor, MENDModelEditor
-    from fact import Fact
-    from relation import Relation
-    from query import Query
-    from testcase import TestCase
-
-    f = Fact('Q76', Relation.FATHER, 'Q12379')  # Barack Obama's father is Mario
-    f_prev = Fact('Q76', Relation.FATHER, 'Q649593')  # Barack Obama's father is Barack Obama Sr.
-    e = CounterFactualExample(f, f_prev)
-    # e = RecentlyAddedExample(f)
-    tq = Query('Q76', Relation.UNCLE, ['Q210593'])  # Barack Obama's uncle is Luigi
-    cq = Query('Q12379', Relation.BROTHER, ['Q210593'])  # Mario's brother is Luigi
-    tc = TestCase(tq, [cq])
-    qe = GPT2QueryExecutor(model_size='medium')
-    me = ROMEModelEditor(qe)
-    tr = TestRunner(qe, me)
-    res = tr.run_testcases(e, [tc])
-    print('------')
-    print(f)
-    print(tc)
-    print(res)
-    print(qe.execute_query(f.get_fact_query()))
