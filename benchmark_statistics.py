@@ -3,8 +3,12 @@ import pandas as pd
 import wptools
 import functools
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 from benchmark import Dataset
+
+
+plt.rcParams.update({'font.size': 16})
 
 
 @functools.lru_cache()
@@ -82,13 +86,24 @@ def get_example_stats(example):
     }
 
 
-def display_statistics(df):
+def relation_counts_to_axis(counts):
+    return [s.replace('_', ' ').lower() for s in counts.index], counts.values
+
+
+def display_statistics(df, args):
     df['avg_conditions_per_test'] = df['condition_query_count'] / df['test_count']
     print('Statistics:')
     print(df.describe().to_string())
     print('--------------------------')
+
     print('Relations:')
     print(df['relation'].value_counts(normalize=True))
+    if args.plot:
+        x, y = relation_counts_to_axis(df['relation'].value_counts(normalize=True)[:10])
+        plt.bar(x, y)
+        plt.xticks(rotation=60, ha='right', rotation_mode='anchor')
+        plt.ylabel('Density')
+        plt.savefig(args.plot, bbox_inches='tight')
 
 
 def main(args):
@@ -114,11 +129,12 @@ def main(args):
     else:
         raise Exception('Wrong arguments given')
 
-    display_statistics(stats_df)
+    display_statistics(stats_df, args)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-b', '--benchmark', help='The benchmark file path')
     parser.add_argument('-s', '--statistics', help='The statistics file path')
+    parser.add_argument('-p', '--plot', help='The relations plot file path')
     main(parser.parse_args())
