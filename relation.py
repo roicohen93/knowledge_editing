@@ -17,9 +17,9 @@ class Relation(Enum):
     CHILD = ('P40', 'The name of the child of <subject> is', ['NUMBER_OF_CHILDREN'], False)
     NUMBER_OF_CHILDREN = ('P1971', 'The number of children <subject> has is', [], True)
     SEX_OR_GENDER = ('P21', "The gender of <subject> is", [], True)
-    PLACE_OF_BIRTH = ('P19', 'The name of the country which <subject> was born in is', [], True)
-    PLACE_OF_DEATH = ('P20', 'The name of the country which <subject> died in is', ['is alive'], True)
-    PLACE_OF_BURIAL = ('P119', 'The name of the country which <subject> is buried in is', ['is alive'], True)
+    PLACE_OF_BIRTH = ('P19', 'The place of birth of <subject> is', [], True)
+    PLACE_OF_DEATH = ('P20', 'The place of death of <subject> is', ['is alive'], True)
+    PLACE_OF_BURIAL = ('P119', 'The place of burial of <subject> is', ['is alive'], True)
     COUNTRY = ('P17', 'The name of the country which <subject> is associated with is',
                ['continent', 'official language', 'capital of', 'currency'], True)
     COUNTRY_OF_CITIZENSHIP = ('P27', 'The name of the country of citizenship of <subject> is', [], False)
