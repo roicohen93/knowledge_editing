@@ -37,29 +37,29 @@ class Example:
     def create_example_dict(self, example_type):
         return {
             'example_type': example_type,
-            'fact': self.fact.to_dict(),
-            'making_up_tests': [test.to_dict() for test in self.making_up_tests],
-            'logical_constraints': [test.to_dict() for test in self.logical_constraints],
-            'subject_paraphrasing_tests': [test.to_dict() for test in self.subject_paraphrasing_tests],
-            'two_hop_tests': [test.to_dict() for test in self.two_hop_tests],
-            'forward_two_hop_tests': [test.to_dict() for test in self.forward_two_hop_tests],
-            'prev_storage_tests': [test.to_dict() for test in self.prev_storage_tests],
+            'edit': self.fact.to_dict(),
+            'Relation_Specificity': [test.to_dict() for test in self.making_up_tests],
+            'Logical_Generalization': [test.to_dict() for test in self.logical_constraints],
+            'Subject_Aliasing': [test.to_dict() for test in self.subject_paraphrasing_tests],
+            'Compositionality_I': [test.to_dict() for test in self.two_hop_tests],
+            'Compositionality_II': [test.to_dict() for test in self.forward_two_hop_tests],
+            'Forgetfulness': [test.to_dict() for test in self.prev_storage_tests],
         }
 
     @staticmethod
     def from_dict(d):
-        fact = Fact.from_dict(d['fact'])
-        making_up_tests = [TestCase.from_dict(test) for test in d['making_up_tests']]
-        logical_constraints = [TestCase.from_dict(test) for test in d['logical_constraints']]
-        subject_paraphrasing_tests = [TestCase.from_dict(test) for test in d['subject_paraphrasing_tests']]
-        two_hop_tests = [TestCase.from_dict(test) for test in d['two_hop_tests']]
-        forward_two_hop_tests = [TestCase.from_dict(test) for test in d['forward_two_hop_tests']]
-        prev_storage_tests = [TestCase.from_dict(test) for test in d['prev_storage_tests']]
-        if d['example_type'] == 'counter_fact':
-            previous_fact = Fact.from_dict(d['previous_fact'])
+        fact = Fact.from_dict(d['edit'])
+        making_up_tests = [TestCase.from_dict(test) for test in d['Relation_Specificity']]
+        logical_constraints = [TestCase.from_dict(test) for test in d['Logical_Generalization']]
+        subject_paraphrasing_tests = [TestCase.from_dict(test) for test in d['Subject_Aliasing']]
+        two_hop_tests = [TestCase.from_dict(test) for test in d['Compositionality_I']]
+        forward_two_hop_tests = [TestCase.from_dict(test) for test in d['Compositionality_II']]
+        prev_storage_tests = [TestCase.from_dict(test) for test in d['Forgetfulness']]
+        if d['example_type'] in ['random', 'popular']:
+            previous_fact = Fact.from_dict(d['edit']['original_fact'])
             return CounterFactualExample(fact, previous_fact, making_up_tests, logical_constraints,
                                          subject_paraphrasing_tests, two_hop_tests, forward_two_hop_tests, prev_storage_tests)
-        elif d['example_type'] == 'recently_added_fact':
+        elif d['example_type'] == 'recent':
             return RecentlyAddedExample(fact, making_up_tests, logical_constraints, subject_paraphrasing_tests,
                                         two_hop_tests, forward_two_hop_tests, prev_storage_tests)
         else:
@@ -120,7 +120,7 @@ class CounterFactualExample(Example):
 
     def to_dict(self):
         d = super().create_example_dict('counter_fact')
-        d['previous_fact'] = self.previous_fact.to_dict()
+        d['edit']['original_fact']  = self.previous_fact.to_dict()
         return d
 
     def __str__(self):
