@@ -71,7 +71,8 @@ def facts_list_to_relation2targets(facts: list):
 def wikidata_item_given_id(ent_id: str):
     try:
         return WikidataItem(get_entity_dict_from_api(ent_id))
-    except:
+    except Exception as e:
+        print(repr(e))
         return None
 
 
